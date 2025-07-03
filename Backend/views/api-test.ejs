@@ -1,0 +1,254 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="text-center mb-4">
+            <i class="fas fa-code text-primary me-2"></i>
+            API Testing Interface
+        </h1>
+        <p class="text-center text-muted">Test all Coffee Shop API endpoints</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-key me-2"></i>Authentication</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="authToken" class="form-label">Auth Token</label>
+                    <input type="text" class="form-control" id="authToken" placeholder="Paste token here">
+                </div>
+                <button class="btn btn-sm btn-secondary" onclick="loadTokenFromStorage()">
+                    Load from Storage
+                </button>
+                <div id="authStatus" class="mt-2"></div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-list me-2"></i>API Endpoints</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <!-- Auth Endpoints -->
+                    <button class="list-group-item list-group-item-action" onclick="testEndpoint('POST', '/api/auth/login', {email: 'admin@coffee.com', password: 'password123'})">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </button>
+                    <button class="list-group-item list-group-item-action" onclick="testEndpoint('GET', '/api/auth/profile')">
+                        <i class="fas fa-user me-2"></i>Get Profile
+                    </button>
+                    <button class="list-group-item list-group-item-action" onclick="testEndpoint('POST', '/api/auth/logout')">
+                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                    </button>
+                    
+                    <!-- Menu Endpoints -->
+                    <button class="list-group-item list-group-item-action" onclick="testEndpoint('GET', '/api/menu')">
+                        <i class="fas fa-utensils me-2"></i>Get Menu
+                    </button>
+                    <button class="list-group-item list-group-item-action" onclick="testEndpoint('GET', '/api/menu/categories')">
+                        <i class="fas fa-tags me-2"></i>Get Categories
+                    </button>
+                    
+                    <!-- Order Endpoints -->
+                    <button class="list-group-item list-group-item-action" onclick="testEndpoint('GET', '/api/orders')">
+                        <i class="fas fa-receipt me-2"></i>Get Orders
+                    </button>
+                    <button class="list-group-item list-group-item-action" onclick="testCreateOrder()">
+                        <i class="fas fa-plus me-2"></i>Create Order
+                    </button>
+                    
+                    <!-- User Endpoints -->
+                    <button class="list-group-item list-group-item-action" onclick="testEndpoint('GET', '/api/users')">
+                        <i class="fas fa-users me-2"></i>Get Users
+                    </button>
+                    
+                    <!-- Shift Endpoints -->
+                    <button class="list-group-item list-group-item-action" onclick="testEndpoint('GET', '/api/shifts/current')">
+                        <i class="fas fa-clock me-2"></i>Current Shift
+                    </button>
+                    <button class="list-group-item list-group-item-action" onclick="testEndpoint('GET', '/api/shifts')">
+                        <i class="fas fa-history me-2"></i>All Shifts
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-terminal me-2"></i>API Response</h5>
+                <button class="btn btn-sm btn-outline-secondary" onclick="clearResponse()">
+                    <i class="fas fa-trash me-1"></i>Clear
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="apiResponse" style="min-height: 400px; background-color: #f8f9fa; border-radius: 5px; padding: 15px; font-family: 'Courier New', monospace;">
+                    <div class="text-muted text-center mt-5">
+                        <i class="fas fa-code fa-2x mb-3"></i>
+                        <p>Select an API endpoint to test</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle me-2"></i>API Documentation</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Base URL</h6>
+                        <code>http://localhost:5000/api</code>
+                        
+                        <h6 class="mt-3">Authentication</h6>
+                        <p class="small">Include Bearer token in Authorization header</p>
+                        <code>Authorization: Bearer &lt;token&gt;</code>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Response Format</h6>
+                        <pre class="small"><code>{
+  "success": true|false,
+  "message": "string",
+  "data": object
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let authToken = '';
+
+function loadTokenFromStorage() {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+        document.getElementById('authToken').value = token;
+        authToken = token;
+        document.getElementById('authStatus').innerHTML = `
+            <div class="alert alert-success alert-sm">
+                <i class="fas fa-check-circle me-1"></i>Token loaded
+            </div>
+        `;
+    } else {
+        document.getElementById('authStatus').innerHTML = `
+            <div class="alert alert-warning alert-sm">
+                <i class="fas fa-exclamation-triangle me-1"></i>No token found
+            </div>
+        `;
+    }
+}
+
+document.getElementById('authToken').addEventListener('input', (e) => {
+    authToken = e.target.value;
+});
+
+async function testEndpoint(method, endpoint, data = null) {
+    const responseDiv = document.getElementById('apiResponse');
+    
+    responseDiv.innerHTML = `
+        <div class="text-center">
+            <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+            <p class="mt-2">Testing ${method} ${endpoint}...</p>
+        </div>
+    `;
+
+    try {
+        const config = {
+            method,
+            url: endpoint,
+            headers: {}
+        };
+
+        if (authToken) {
+            config.headers.Authorization = `Bearer ${authToken}`;
+        }
+
+        if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+            config.data = data;
+            config.headers['Content-Type'] = 'application/json';
+        }
+
+        const response = await axios(config);
+        
+        displayResponse(method, endpoint, response.status, response.data, null);
+        
+        // Store token if login was successful
+        if (endpoint === '/api/auth/login' && response.data.success && response.data.token) {
+            authToken = response.data.token;
+            document.getElementById('authToken').value = authToken;
+            localStorage.setItem('authToken', authToken);
+        }
+    } catch (error) {
+        displayResponse(method, endpoint, error.response?.status || 'Error', error.response?.data || error.message, error);
+    }
+}
+
+function displayResponse(method, endpoint, status, data, error) {
+    const responseDiv = document.getElementById('apiResponse');
+    const statusColor = error ? 'danger' : 'success';
+    
+    responseDiv.innerHTML = `
+        <div class="mb-3">
+            <span class="badge bg-primary">${method}</span>
+            <span class="badge bg-secondary ms-1">${endpoint}</span>
+            <span class="badge bg-${statusColor} ms-1">${status}</span>
+        </div>
+        <pre style="background-color: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 5px; max-height: 400px; overflow-y: auto;">${JSON.stringify(data, null, 2)}</pre>
+    `;
+}
+
+async function testCreateOrder() {
+    // First get menu items to create a valid order
+    try {
+        const menuResponse = await axios.get('/api/menu');
+        const menuItems = menuResponse.data.menuItems;
+        
+        if (menuItems.length === 0) {
+            alert('No menu items available. Please run seed data first.');
+            return;
+        }
+
+        const orderData = {
+            items: [
+                {
+                    menuItemId: menuItems[0]._id,
+                    quantity: 2
+                },
+                {
+                    menuItemId: menuItems[1]._id,
+                    quantity: 1
+                }
+            ],
+            customerName: 'Test Customer',
+            customerPhone: '+1234567890',
+            notes: 'Test order from API',
+            paymentMethod: 'cash'
+        };
+
+        await testEndpoint('POST', '/api/orders', orderData);
+    } catch (error) {
+        console.error('Error creating test order:', error);
+        alert('Error creating test order. Make sure you are logged in and menu items exist.');
+    }
+}
+
+function clearResponse() {
+    document.getElementById('apiResponse').innerHTML = `
+        <div class="text-muted text-center mt-5">
+            <i class="fas fa-code fa-2x mb-3"></i>
+            <p>Select an API endpoint to test</p>
+        </div>
+    `;
+}
+
+// Load token on page load
+window.addEventListener('load', () => {
+    loadTokenFromStorage();
+});
+</script>

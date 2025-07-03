@@ -1,0 +1,124 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="text-center mb-4">
+            <i class="fas fa-coffee text-primary me-2"></i>
+            Coffee Shop Dashboard
+        </h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4><%= stats.menuCount %></h4>
+                        <p class="mb-0">Menu Items</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-utensils fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4><%= stats.orderCount %></h4>
+                        <p class="mb-0">Total Orders</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-receipt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4><%= stats.userCount %></h4>
+                        <p class="mb-0">Users</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4><%= stats.activeShifts %></h4>
+                        <p class="mb-0">Active Shifts</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Recent Orders</h5>
+            </div>
+            <div class="card-body">
+                <% if (recentOrders.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Cashier</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% recentOrders.forEach(order => { %>
+                                    <tr>
+                                        <td><code>#<%= order._id.toString().slice(-6) %></code></td>
+                                        <td><%= order.customerName %></td>
+                                        <td><%= order.cashierId ? order.cashierId.nama : 'N/A' %></td>
+                                        <td>$<%= order.total.toFixed(2) %></td>
+                                        <td>
+                                            <span class="badge bg-<%= order.status === 'completed' ? 'success' : order.status === 'pending' ? 'warning' : order.status === 'cancelled' ? 'danger' : 'info' %>">
+                                                <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                                            </span>
+                                        </td>
+                                        <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="/orders" class="btn btn-primary">View All Orders</a>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-4">
+                        <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No orders yet</p>
+                        <a href="/api-test" class="btn btn-primary">Test API</a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>

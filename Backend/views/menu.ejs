@@ -1,0 +1,87 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="text-center mb-4">
+            <i class="fas fa-utensils text-primary me-2"></i>
+            Menu Items
+        </h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/menu" class="btn btn-outline-primary <%= currentCategory === 'All' ? 'active' : '' %>">
+                        All Categories
+                    </a>
+                    <% categories.forEach(category => { %>
+                        <a href="/menu?category=<%= category %>" class="btn btn-outline-primary <%= currentCategory === category ? 'active' : '' %>">
+                            <%= category %>
+                        </a>
+                    <% }) %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <% if (menuItems.length > 0) { %>
+        <% menuItems.forEach(item => { %>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="<%= item.image %>" class="card-img-top" alt="<%= item.name %>" style="height: 200px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title"><%= item.name %></h5>
+                        <p class="card-text text-muted small"><%= item.description %></p>
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-secondary"><%= item.category %></span>
+                                <span class="badge bg-<%= item.isAvailable ? 'success' : 'danger' %>">
+                                    <%= item.isAvailable ? 'Available' : 'Unavailable' %>
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong class="text-success">$<%= item.price.toFixed(2) %></strong>
+                                <small class="text-muted">Stock: <%= item.stock %></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    <% } else { %>
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No menu items found</h4>
+                <p class="text-muted">Try selecting a different category</p>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<% if (pagination.pages > 1) { %>
+    <nav aria-label="Menu pagination">
+        <ul class="pagination justify-content-center mt-4">
+            <% if (pagination.hasPrev) { %>
+                <li class="page-item">
+                    <a class="page-link" href="/menu?page=<%= pagination.page - 1 %><%= currentCategory !== 'All' ? '&category=' + currentCategory : '' %>">Previous</a>
+                </li>
+            <% } %>
+            
+            <% for (let i = 1; i <= pagination.pages; i++) { %>
+                <li class="page-item <%= i === pagination.page ? 'active' : '' %>">
+                    <a class="page-link" href="/menu?page=<%= i %><%= currentCategory !== 'All' ? '&category=' + currentCategory : '' %>"><%= i %></a>
+                </li>
+            <% } %>
+            
+            <% if (pagination.hasNext) { %>
+                <li class="page-item">
+                    <a class="page-link" href="/menu?page=<%= pagination.page + 1 %><%= currentCategory !== 'All' ? '&category=' + currentCategory : '' %>">Next</a>
+                </li>
+            <% } %>
+        </ul>
+    </nav>
+<% } %>
