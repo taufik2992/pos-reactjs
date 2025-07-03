@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -6,29 +6,59 @@ import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { FileUpload } from '../../components/ui/FileUpload';
 import { MenuItem } from '../../types';
-import { menuItems as initialMenuItems } from '../../data/menu';
+import { menuAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 export const MenuManagement: React.FC = () => {
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
     category: '',
-    image: '',
+    image: null as File | null,
+    imagePreview: '',
     stock: '',
   });
-
-  const categories = ['Coffee', 'Main Course', 'Salads', 'Desserts', 'Beverages'];
 
   const filteredItems = menuItems.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  useEffect(() => {
+    loadMenuItems();
+    loadCategories();
+  }, []);
+
+  const loadMenuItems = async () => {
+    try {
+      const response = await menuAPI.getAll();
+      if (response.data.success) {
+        setMenuItems(response.data.menuItems);
+      }
+    } catch (error) {
+      toast.error('Failed to load menu items');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const response = await menuAPI.getCategories();
+      if (response.data.success) {
+        setCategories(response.data.categories);
+      }
+    } catch (error) {
+      console.error('Failed to load categories:', error);
+    }
+  };
 
   const handleAdd = () => {
     setEditingItem(null);
@@ -37,7 +67,8 @@ export const MenuManagement: React.FC = () => {
       description: '',
       price: '',
       category: '',
-      image: '',
+      image: null,
+      imagePreview: '',
       stock: '',
     });
     setIsModalOpen(true);
@@ -50,61 +81,77 @@ export const MenuManagement: React.FC = () => {
       description: item.description,
       price: item.price.toString(),
       category: item.category,
-      image: item.image,
+      image: null,
+      imagePreview: item.image,
       stock: item.stock.toString(),
     });
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
-      setMenuItems(items => items.filter(item => item.id !== id));
-      toast.success('Item deleted successfully!');
+      try {
+        await menuAPI.delete(id);
+        setMenuItems(items => items.filter(item => item.id !== id));
+        toast.success('Item deleted successfully!');
+      } catch (error) {
+        toast.error('Failed to delete item');
+      }
     }
   };
 
   const handleImageUpload = (file: File | null, dataUrl: string) => {
-    setFormData({ ...formData, image: dataUrl });
+    setFormData({ ...formData, image: file, imagePreview: dataUrl });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingItem) {
-      setMenuItems(items =>
-        items.map(item =>
-          item.id === editingItem.id
-            ? {
-                ...item,
-                name: formData.name,
-                description: formData.description,
-                price: parseFloat(formData.price),
-                category: formData.category,
-                image: formData.image,
-                stock: parseInt(formData.stock),
-              }
-            : item
-        )
-      );
-      toast.success('Item updated successfully!');
-    } else {
-      const newItem: MenuItem = {
-        id: Date.now().toString(),
-        name: formData.name,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        category: formData.category,
-        image: formData.image || 'https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1',
-        stock: parseInt(formData.stock),
-        isAvailable: true,
-        createdAt: new Date().toISOString(),
-      };
-      setMenuItems(items => [...items, newItem]);
-      toast.success('Item added successfully!');
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('stock', formData.stock);
+      
+      if (formData.image) {
+        formDataToSend.append('image', formData.image);
+      }
+
+      if (editingItem) {
+        const response = await menuAPI.update(editingItem.id, formDataToSend);
+        if (response.data.success) {
+          setMenuItems(items =>
+            items.map(item =>
+              item.id === editingItem.id ? response.data.menuItem : item
+            )
+          );
+          toast.success('Item updated successfully!');
+        }
+      } else {
+        const response = await menuAPI.create(formDataToSend);
+        if (response.data.success) {
+          setMenuItems(items => [...items, response.data.menuItem]);
+          toast.success('Item added successfully!');
+        }
+      }
+      
+      setIsModalOpen(false);
+      loadCategories(); // Reload categories in case new one was added
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Operation failed';
+      toast.error(message);
     }
-    
-    setIsModalOpen(false);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -259,7 +306,7 @@ export const MenuManagement: React.FC = () => {
           
           <FileUpload
             label="Item Image"
-            value={formData.image}
+            value={formData.imagePreview}
             onChange={handleImageUpload}
             required={!editingItem}
           />

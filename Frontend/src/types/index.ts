@@ -1,9 +1,8 @@
 export interface User {
   id: string;
-  name: string;
+  nama: string;
   email: string;
   role: 'admin' | 'cashier';
-  password: string;
   avatar?: string;
   createdAt: string;
   isActive: boolean;
@@ -34,10 +33,11 @@ export interface Order {
   cashierId: string;
   items: OrderItem[];
   total: number;
-  paymentMethod: 'cash' | 'qr';
-  status: 'pending' | 'completed' | 'cancelled';
+  paymentMethod: 'cash' | 'card' | 'digital' | 'midtrans';
+  status: 'pending' | 'processing' | 'completed' | 'cancelled';
   createdAt: string;
   customerName?: string;
+  customerPhone?: string;
   notes?: string;
 }
 

@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthState } from '../types';
-import { users } from '../data/users';
+import { authAPI } from '../services/api';
+import toast from 'react-hot-toast';
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -14,39 +16,67 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user: null,
     isAuthenticated: false,
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('pos-user');
-    if (savedUser) {
-      try {
-        const user = JSON.parse(savedUser);
-        setAuthState({ user, isAuthenticated: true });
-      } catch (error) {
-        localStorage.removeItem('pos-user');
+    const initAuth = async () => {
+      const token = localStorage.getItem('auth-token');
+      if (token) {
+        try {
+          const response = await authAPI.getProfile();
+          if (response.data.success) {
+            setAuthState({ 
+              user: response.data.user, 
+              isAuthenticated: true 
+            });
+          }
+        } catch (error) {
+          localStorage.removeItem('auth-token');
+          localStorage.removeItem('pos-user');
+        }
       }
-    }
+      setLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const user = users.find(u => u.email === email && u.password === password && u.isActive);
-    
-    if (user) {
-      const { password: _, ...userWithoutPassword } = user;
-      setAuthState({ user: userWithoutPassword as User, isAuthenticated: true });
-      localStorage.setItem('pos-user', JSON.stringify(userWithoutPassword));
-      return true;
+    try {
+      const response = await authAPI.login(email, password);
+      
+      if (response.data.success) {
+        const { token, user } = response.data;
+        
+        localStorage.setItem('auth-token', token);
+        localStorage.setItem('pos-user', JSON.stringify(user));
+        
+        setAuthState({ user, isAuthenticated: true });
+        return true;
+      }
+      
+      return false;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Login failed';
+      toast.error(message);
+      return false;
     }
-    
-    return false;
   };
 
-  const logout = () => {
-    setAuthState({ user: null, isAuthenticated: false });
-    localStorage.removeItem('pos-user');
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setAuthState({ user: null, isAuthenticated: false });
+      localStorage.removeItem('auth-token');
+      localStorage.removeItem('pos-user');
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ ...authState, login, logout }}>
+    <AuthContext.Provider value={{ ...authState, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

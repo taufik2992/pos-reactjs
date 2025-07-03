@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
+import { shiftAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 interface WorkShiftContextType {
@@ -10,6 +11,7 @@ interface WorkShiftContextType {
   startShift: () => void;
   endShift: () => void;
   formatTime: (seconds: number) => string;
+  loading: boolean;
 }
 
 const WorkShiftContext = createContext<WorkShiftContextType | undefined>(undefined);
@@ -22,35 +24,35 @@ export const WorkShiftProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [shiftStartTime, setShiftStartTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [remainingTime, setRemainingTime] = useState(SHIFT_DURATION);
+  const [loading, setLoading] = useState(false);
 
-  // Load shift data from localStorage on mount
+  // Load current shift data from API
   useEffect(() => {
-    if (user?.role === 'cashier') {
-      const savedShiftData = localStorage.getItem(`shift-${user.id}`);
-      if (savedShiftData) {
+    const loadCurrentShift = async () => {
+      if (user?.role === 'cashier') {
         try {
-          const { startTime, isActive } = JSON.parse(savedShiftData);
-          const start = new Date(startTime);
-          const now = new Date();
-          const elapsed = Math.floor((now.getTime() - start.getTime()) / 1000);
-          
-          if (isActive && elapsed < SHIFT_DURATION) {
-            setIsShiftActive(true);
-            setShiftStartTime(start);
-            setElapsedTime(elapsed);
-            setRemainingTime(SHIFT_DURATION - elapsed);
-          } else if (elapsed >= SHIFT_DURATION) {
-            // Shift expired, clean up
-            localStorage.removeItem(`shift-${user.id}`);
-            toast.error('Your 8-hour shift has ended. Please log in again.');
-            logout();
+          const response = await shiftAPI.getCurrent();
+          if (response.data.success && response.data.shift) {
+            const shift = response.data.shift;
+            const start = new Date(shift.clockIn);
+            const now = new Date();
+            const elapsed = Math.floor((now.getTime() - start.getTime()) / 1000);
+            
+            if (shift.status === 'active' && elapsed < SHIFT_DURATION) {
+              setIsShiftActive(true);
+              setShiftStartTime(start);
+              setElapsedTime(elapsed);
+              setRemainingTime(SHIFT_DURATION - elapsed);
+            }
           }
         } catch (error) {
-          localStorage.removeItem(`shift-${user.id}`);
+          console.error('Error loading current shift:', error);
         }
       }
-    }
-  }, [user, logout]);
+    };
+
+    loadCurrentShift();
+  }, [user]);
 
   // Timer effect
   useEffect(() => {
@@ -90,36 +92,45 @@ export const WorkShiftProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   }, [isShiftActive, shiftStartTime, logout]);
 
-  const startShift = () => {
-    if (user?.role !== 'cashier') return;
+  const startShift = async () => {
+    if (user?.role !== 'cashier' || loading) return;
 
-    const now = new Date();
-    setIsShiftActive(true);
-    setShiftStartTime(now);
-    setElapsedTime(0);
-    setRemainingTime(SHIFT_DURATION);
+    setLoading(true);
+    try {
+      // Shift is automatically started when user logs in
+      // This function is mainly for UI feedback
+      const now = new Date();
+      setIsShiftActive(true);
+      setShiftStartTime(now);
+      setElapsedTime(0);
+      setRemainingTime(SHIFT_DURATION);
 
-    // Save to localStorage
-    localStorage.setItem(`shift-${user.id}`, JSON.stringify({
-      startTime: now.toISOString(),
-      isActive: true
-    }));
-
-    toast.success('Work shift started! You have 8 hours.', { duration: 3000 });
+      toast.success('Work shift started! You have 8 hours.', { duration: 3000 });
+    } catch (error) {
+      toast.error('Failed to start shift');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const endShift = () => {
-    if (user?.role !== 'cashier') return;
+  const endShift = async () => {
+    if (user?.role !== 'cashier' || loading) return;
 
-    setIsShiftActive(false);
-    setShiftStartTime(null);
-    setElapsedTime(0);
-    setRemainingTime(SHIFT_DURATION);
+    setLoading(true);
+    try {
+      await shiftAPI.clockOut();
+      
+      setIsShiftActive(false);
+      setShiftStartTime(null);
+      setElapsedTime(0);
+      setRemainingTime(SHIFT_DURATION);
 
-    // Remove from localStorage
-    localStorage.removeItem(`shift-${user.id}`);
-
-    toast.success('Work shift ended successfully!', { duration: 3000 });
+      toast.success('Work shift ended successfully!', { duration: 3000 });
+    } catch (error) {
+      toast.error('Failed to end shift');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatTime = (seconds: number): string => {
@@ -137,7 +148,8 @@ export const WorkShiftProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       remainingTime,
       startShift,
       endShift,
-      formatTime
+      formatTime,
+      loading
     }}>
       {children}
     </WorkShiftContext.Provider>

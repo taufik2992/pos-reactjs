@@ -1,26 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Minus, ShoppingCart, Search, CreditCard, Banknote } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { MenuItem, OrderItem } from '../../types';
-import { menuItems } from '../../data/menu';
+import { menuAPI, orderAPI, paymentAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import QRCode from 'qrcode';
 
 export const Orders: React.FC = () => {
   const { user } = useAuth();
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [categories, setCategories] = useState<string[]>([]);
   const [cart, setCart] = useState<OrderItem[]>([]);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [customerName, setCustomerName] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'qr'>('cash');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'midtrans'>('cash');
   const [qrCodeData, setQrCodeData] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  const categories = ['All', ...Array.from(new Set(menuItems.map(item => item.category)))];
+  useEffect(() => {
+    loadMenuItems();
+    loadCategories();
+  }, []);
+
+  const loadMenuItems = async () => {
+    try {
+      const response = await menuAPI.getAll();
+      if (response.data.success) {
+        setMenuItems(response.data.menuItems);
+      }
+    } catch (error) {
+      toast.error('Failed to load menu items');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const response = await menuAPI.getCategories();
+      if (response.data.success) {
+        setCategories(['All', ...response.data.categories]);
+      }
+    } catch (error) {
+      console.error('Failed to load categories:', error);
+    }
+  };
 
   const filteredItems = menuItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -82,34 +114,69 @@ export const Orders: React.FC = () => {
       return;
     }
 
-    if (paymentMethod === 'qr') {
-      const qrData = `Restaurant Payment - Total: $${getCartTotal().toFixed(2)} - Order ID: ${Date.now()}`;
-      try {
-        const qrCode = await QRCode.toDataURL(qrData);
-        setQrCodeData(qrCode);
-      } catch (error) {
-        toast.error('Failed to generate QR code');
-        return;
-      }
-    }
-
     setIsCheckoutOpen(true);
   };
 
-  const completeOrder = () => {
-    const orderId = Date.now().toString();
+  const completeOrder = async () => {
+    if (submitting) return;
     
-    toast.success(`Order #${orderId} completed successfully!`);
-    
-    setCart([]);
-    setCustomerName('');
-    setIsCheckoutOpen(false);
-    setQrCodeData('');
+    setSubmitting(true);
+    try {
+      const orderData = {
+        items: cart.map(item => ({
+          menuItemId: item.menuItemId,
+          quantity: item.quantity
+        })),
+        customerName: customerName || 'Walk-in Customer',
+        customerPhone,
+        paymentMethod,
+        notes: ''
+      };
 
-    setTimeout(() => {
-      toast.success('Receipt printed successfully!');
-    }, 1000);
+      const response = await orderAPI.create(orderData);
+      
+      if (response.data.success) {
+        const order = response.data.order;
+        
+        if (paymentMethod === 'midtrans') {
+          try {
+            const paymentResponse = await paymentAPI.create(order._id);
+            if (paymentResponse.data.success) {
+              // Open payment URL in new window
+              window.open(paymentResponse.data.paymentUrl, '_blank');
+              toast.success('Payment link opened in new tab');
+            }
+          } catch (paymentError) {
+            toast.error('Failed to create payment link');
+          }
+        }
+        
+        toast.success(`Order #${order._id.slice(-6)} created successfully!`);
+        
+        setCart([]);
+        setCustomerName('');
+        setCustomerPhone('');
+        setIsCheckoutOpen(false);
+        setQrCodeData('');
+        
+        // Reload menu items to update stock
+        loadMenuItems();
+      }
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to create order';
+      toast.error(message);
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -296,10 +363,17 @@ export const Orders: React.FC = () => {
       >
         <div className="space-y-4 sm:space-y-6">
           <Input
-            label="Customer Name (Optional)"
+            label="Customer Name"
             value={customerName}
             onChange={setCustomerName}
-            placeholder="Enter customer name"
+            placeholder="Enter customer name (optional)"
+          />
+
+          <Input
+            label="Customer Phone"
+            value={customerPhone}
+            onChange={setCustomerPhone}
+            placeholder="Enter customer phone (optional)"
           />
 
           <div>
@@ -319,29 +393,18 @@ export const Orders: React.FC = () => {
                 <span className="text-sm sm:text-base">Cash</span>
               </button>
               <button
-                onClick={() => setPaymentMethod('qr')}
+                onClick={() => setPaymentMethod('midtrans')}
                 className={`p-3 sm:p-4 border rounded-lg flex items-center justify-center space-x-2 transition-colors ${
-                  paymentMethod === 'qr'
+                  paymentMethod === 'midtrans'
                     ? 'border-amber-600 bg-amber-50 dark:bg-amber-900/20 text-amber-600'
                     : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
                 }`}
               >
                 <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="text-sm sm:text-base">QR Code</span>
+                <span className="text-sm sm:text-base">Midtrans</span>
               </button>
             </div>
           </div>
-
-          {paymentMethod === 'qr' && qrCodeData && (
-            <div className="text-center">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Scan QR Code to Pay
-              </p>
-              <div className="flex justify-center">
-                <img src={qrCodeData} alt="QR Code" className="max-w-full h-auto" />
-              </div>
-            </div>
-          )}
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
             <div className="space-y-2">
@@ -372,14 +435,16 @@ export const Orders: React.FC = () => {
               variant="outline"
               onClick={() => setIsCheckoutOpen(false)}
               className="w-full sm:flex-1"
+              disabled={submitting}
             >
               Cancel
             </Button>
             <Button
               onClick={completeOrder}
               className="w-full sm:flex-1"
+              disabled={submitting}
             >
-              Complete Order
+              {submitting ? 'Processing...' : 'Complete Order'}
             </Button>
           </div>
         </div>
