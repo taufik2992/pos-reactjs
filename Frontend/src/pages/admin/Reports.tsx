@@ -1,51 +1,27 @@
-import React from "react";
-import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  ShoppingBag,
-} from "lucide-react";
-import { Card } from "../../components/ui/Card";
-import { StatsCard } from "../../components/dashboard/StatsCard";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "../../components/ui/Table";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
-import { orders } from "../../data/orders";
-import { menuItems } from "../../data/menu";
+import React from 'react';
+import { TrendingUp, TrendingDown, DollarSign, ShoppingBag } from 'lucide-react';
+import { Card } from '../../components/ui/Card';
+import { StatsCard } from '../../components/dashboard/StatsCard';
+import { Table, TableHeader, TableBody, TableRow, TableCell } from '../../components/ui/Table';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { orders } from '../../data/orders';
+import { menuItems } from '../../data/menu';
 
 const salesData = [
-  { name: "Jan", sales: 4000, orders: 24 },
-  { name: "Feb", sales: 3000, orders: 18 },
-  { name: "Mar", sales: 5000, orders: 32 },
-  { name: "Apr", sales: 2780, orders: 16 },
-  { name: "May", sales: 6890, orders: 43 },
-  { name: "Jun", sales: 2390, orders: 14 },
-  { name: "Jul", sales: 3490, orders: 20 },
+  { name: 'Jan', sales: 4000, orders: 24 },
+  { name: 'Feb', sales: 3000, orders: 18 },
+  { name: 'Mar', sales: 5000, orders: 32 },
+  { name: 'Apr', sales: 2780, orders: 16 },
+  { name: 'May', sales: 6890, orders: 43 },
+  { name: 'Jun', sales: 2390, orders: 14 },
+  { name: 'Jul', sales: 3490, orders: 20 },
 ];
 
 const categoryData = [
-  { name: "Coffee", value: 30, color: "#8B4513" },
-  { name: "Main Course", value: 35, color: "#F59E0B" },
-  { name: "Desserts", value: 15, color: "#10B981" },
-  { name: "Beverages", value: 20, color: "#F97316" },
+  { name: 'Coffee', value: 30, color: '#8B4513' },
+  { name: 'Main Course', value: 35, color: '#F59E0B' },
+  { name: 'Desserts', value: 15, color: '#10B981' },
+  { name: 'Beverages', value: 20, color: '#F97316' },
 ];
 
 export const Reports: React.FC = () => {
@@ -67,7 +43,7 @@ export const Reports: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatsCard
           title="Total Sales"
-          value={`Rp. ${totalSales.toFixed(3)}`}
+          value={`$${totalSales.toFixed(2)}`}
           icon={DollarSign}
           color="green"
           change="+15.3% from last month"
@@ -81,7 +57,7 @@ export const Reports: React.FC = () => {
         />
         <StatsCard
           title="Avg Order Value"
-          value={`Rp. ${avgOrderValue.toFixed(3)}`}
+          value={`$${avgOrderValue.toFixed(2)}`}
           icon={TrendingUp}
           color="yellow"
           change="+5.4% from last month"
@@ -102,35 +78,32 @@ export const Reports: React.FC = () => {
           </h3>
           <div className="h-64 sm:h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={salesData}
-                margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-              >
+              <LineChart data={salesData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="name"
+                <XAxis 
+                  dataKey="name" 
                   className="text-gray-600 dark:text-gray-400"
                   fontSize={12}
                 />
-                <YAxis
+                <YAxis 
                   className="text-gray-600 dark:text-gray-400"
                   fontSize={12}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "rgb(55 65 81)",
-                    border: "none",
-                    borderRadius: "8px",
-                    color: "white",
-                    fontSize: "14px",
+                    backgroundColor: 'rgb(55 65 81)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: 'white',
+                    fontSize: '14px'
                   }}
                 />
-                <Line
-                  type="monotone"
-                  dataKey="sales"
-                  stroke="#F59E0B"
+                <Line 
+                  type="monotone" 
+                  dataKey="sales" 
+                  stroke="#F59E0B" 
                   strokeWidth={3}
-                  dot={{ fill: "#F59E0B", strokeWidth: 2, r: 6 }}
+                  dot={{ fill: '#F59E0B', strokeWidth: 2, r: 6 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -149,9 +122,7 @@ export const Reports: React.FC = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(0)}%`
-                  }
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -175,13 +146,9 @@ export const Reports: React.FC = () => {
           <TableHeader>
             <TableRow>
               <TableCell header>Item</TableCell>
-              <TableCell header className="hidden sm:table-cell">
-                Category
-              </TableCell>
+              <TableCell header className="hidden sm:table-cell">Category</TableCell>
               <TableCell header>Price</TableCell>
-              <TableCell header className="hidden md:table-cell">
-                Stock
-              </TableCell>
+              <TableCell header className="hidden md:table-cell">Stock</TableCell>
               <TableCell header>Status</TableCell>
             </TableRow>
           </TableHeader>
@@ -211,20 +178,18 @@ export const Reports: React.FC = () => {
                   </span>
                 </TableCell>
                 <TableCell className="text-sm text-gray-900 dark:text-white font-medium">
-                  Rp. {item.price.toFixed(3)}
+                  ${item.price.toFixed(2)}
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-sm text-gray-500 dark:text-gray-400">
                   {item.stock}
                 </TableCell>
                 <TableCell>
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      item.stock > 10
-                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                        : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
-                    }`}
-                  >
-                    {item.stock > 10 ? "In Stock" : "Low Stock"}
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    item.stock > 10 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                  }`}>
+                    {item.stock > 10 ? 'In Stock' : 'Low Stock'}
                   </span>
                 </TableCell>
               </TableRow>

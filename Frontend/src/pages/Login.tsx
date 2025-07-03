@@ -1,25 +1,20 @@
-import React, { useState } from "react";
-import { Navigate } from "react-router-dom";
-import { Coffee, Mail, Lock } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
-import { Card } from "../components/ui/Card";
-import toast from "react-hot-toast";
+import React, { useState } from 'react';
+import { Navigate } from 'react-router-dom';
+import { Coffee, Mail, Lock } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Card } from '../components/ui/Card';
+import toast from 'react-hot-toast';
 
 export const Login: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, isAuthenticated, user } = useAuth();
 
   if (isAuthenticated && user) {
-    return (
-      <Navigate
-        to={user.role === "admin" ? "/admin/dashboard" : "/user/dashboard"}
-        replace
-      />
-    );
+    return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/user/dashboard'} replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,12 +24,12 @@ export const Login: React.FC = () => {
     try {
       const success = await login(email, password);
       if (success) {
-        toast.success("Login successful!");
+        toast.success('Login successful!');
       } else {
-        toast.error("Invalid email or password");
+        toast.error('Invalid email or password');
       }
     } catch (error) {
-      toast.error("Login failed. Please try again.");
+      toast.error('Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -83,7 +78,7 @@ export const Login: React.FC = () => {
               className="w-full"
               disabled={loading}
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
 

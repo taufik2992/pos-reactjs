@@ -1,5 +1,5 @@
-import React from "react";
-import { LucideIcon } from "lucide-react";
+import React from 'react';
+import { DivideIcon as LucideIcon } from 'lucide-react';
 
 interface InputProps {
   label?: string;
@@ -15,7 +15,7 @@ interface InputProps {
 
 export const Input: React.FC<InputProps> = ({
   label,
-  type = "text",
+  type = 'text',
   value,
   onChange,
   placeholder,
@@ -43,11 +43,9 @@ export const Input: React.FC<InputProps> = ({
           placeholder={placeholder}
           required={required}
           disabled={disabled}
-          className={`w-full ${
-            Icon ? "pl-8 sm:pl-10" : "pl-3"
-          } pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 text-sm sm:text-base ${
-            error ? "border-red-500 focus:ring-red-500" : ""
-          } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+          className={`w-full ${Icon ? 'pl-8 sm:pl-10' : 'pl-3'} pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 text-sm sm:text-base ${
+            error ? 'border-red-500 focus:ring-red-500' : ''
+          } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         />
       </div>
       {error && (

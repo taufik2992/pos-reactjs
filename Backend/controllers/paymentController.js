@@ -1,23 +1,23 @@
-const { snap } = require('../config/midtrans');
-const Order = require('../models/Order');
-const crypto = require('crypto');
+const { snap } = require("../config/midtrans");
+const Order = require("../models/Order");
+const crypto = require("crypto");
 
 const createPayment = async (req, res) => {
   try {
     const { orderId } = req.body;
 
-    const order = await Order.findById(orderId).populate('items.menuItemId');
+    const order = await Order.findById(orderId).populate("items.menuItemId");
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: 'Order not found'
+        message: "Order not found",
       });
     }
 
-    if (order.status !== 'pending') {
+    if (order.status !== "pending") {
       return res.status(400).json({
         success: false,
-        message: 'Order is not pending payment'
+        message: "Order is not pending payment",
       });
     }
 
@@ -27,23 +27,26 @@ const createPayment = async (req, res) => {
     const parameter = {
       transaction_details: {
         order_id: midtransOrderId,
-        gross_amount: Math.round(order.total)
+        gross_amount: order.items.reduce(
+          (total, item) => total + Math.round(item.price) * item.quantity,
+          0
+        ), // Hitung dari item
       },
       customer_details: {
         first_name: order.customerName,
-        phone: order.customerPhone || ''
+        phone: order.customerPhone || "",
       },
-      item_details: order.items.map(item => ({
+      item_details: order.items.map((item) => ({
         id: item.menuItemId._id,
         price: Math.round(item.price),
         quantity: item.quantity,
-        name: item.menuItemId.name
+        name: item.menuItemId.name,
       })),
       callbacks: {
-        finish: `${req.protocol}://${req.get('host')}/payment/finish`,
-        error: `${req.protocol}://${req.get('host')}/payment/error`,
-        pending: `${req.protocol}://${req.get('host')}/payment/pending`
-      }
+        finish: `${req.protocol}://${req.get("host")}/payment/finish`,
+        error: `${req.protocol}://${req.get("host")}/payment/error`,
+        pending: `${req.protocol}://${req.get("host")}/payment/pending`,
+      },
     };
 
     const transaction = await snap.createTransaction(parameter);
@@ -51,22 +54,22 @@ const createPayment = async (req, res) => {
     // Update order with Midtrans info
     order.midtransToken = transaction.token;
     order.midtransOrderId = midtransOrderId;
-    order.paymentMethod = 'midtrans';
+    order.paymentMethod = "midtrans";
     await order.save();
 
     res.status(200).json({
       success: true,
-      message: 'Payment link created successfully',
+      message: "Payment link created successfully",
       paymentUrl: transaction.redirect_url,
       token: transaction.token,
-      orderId: midtransOrderId
+      orderId: midtransOrderId,
     });
   } catch (error) {
-    console.error('Create payment error:', error);
+    console.error("Create payment error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to create payment',
-      error: error.message
+      message: "Failed to create payment",
+      error: error.message,
     });
   }
 };
@@ -75,22 +78,22 @@ const handleNotification = async (req, res) => {
   try {
     const notification = req.body;
     const serverKey = process.env.MIDTRANS_SERVER_KEY;
-    
+
     // Verify signature
     const signatureKey = notification.signature_key;
     const orderId = notification.order_id;
     const statusCode = notification.status_code;
     const grossAmount = notification.gross_amount;
-    
+
     const mySignatureKey = crypto
-      .createHash('sha512')
+      .createHash("sha512")
       .update(orderId + statusCode + grossAmount + serverKey)
-      .digest('hex');
+      .digest("hex");
 
     if (signatureKey !== mySignatureKey) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid signature'
+        message: "Invalid signature",
       });
     }
 
@@ -102,38 +105,40 @@ const handleNotification = async (req, res) => {
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: 'Order not found'
+        message: "Order not found",
       });
     }
 
     // Update order status based on Midtrans notification
-    if (transactionStatus === 'capture') {
-      if (fraudStatus === 'challenge') {
-        order.status = 'pending';
-      } else if (fraudStatus === 'accept') {
-        order.status = 'processing';
+    if (transactionStatus === "capture") {
+      if (fraudStatus === "challenge") {
+        order.status = "pending";
+      } else if (fraudStatus === "accept") {
+        order.status = "processing";
       }
-    } else if (transactionStatus === 'settlement') {
-      order.status = 'completed';
-    } else if (transactionStatus === 'cancel' || 
-               transactionStatus === 'deny' || 
-               transactionStatus === 'expire') {
-      order.status = 'cancelled';
-    } else if (transactionStatus === 'pending') {
-      order.status = 'pending';
+    } else if (transactionStatus === "settlement") {
+      order.status = "completed";
+    } else if (
+      transactionStatus === "cancel" ||
+      transactionStatus === "deny" ||
+      transactionStatus === "expire"
+    ) {
+      order.status = "cancelled";
+    } else if (transactionStatus === "pending") {
+      order.status = "pending";
     }
 
     await order.save();
 
     res.status(200).json({
       success: true,
-      message: 'Notification processed successfully'
+      message: "Notification processed successfully",
     });
   } catch (error) {
-    console.error('Handle notification error:', error);
+    console.error("Handle notification error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to process notification'
+      message: "Failed to process notification",
     });
   }
 };
@@ -146,7 +151,7 @@ const getPaymentStatus = async (req, res) => {
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: 'Order not found'
+        message: "Order not found",
       });
     }
 
@@ -157,14 +162,14 @@ const getPaymentStatus = async (req, res) => {
         status: order.status,
         paymentMethod: order.paymentMethod,
         total: order.total,
-        midtransOrderId: order.midtransOrderId
-      }
+        midtransOrderId: order.midtransOrderId,
+      },
     });
   } catch (error) {
-    console.error('Get payment status error:', error);
+    console.error("Get payment status error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: "Server error",
     });
   }
 };
@@ -172,5 +177,5 @@ const getPaymentStatus = async (req, res) => {
 module.exports = {
   createPayment,
   handleNotification,
-  getPaymentStatus
+  getPaymentStatus,
 };

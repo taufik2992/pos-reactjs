@@ -1,0 +1,694 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="text-center mb-4">
+            <i class="fas fa-chart-line text-primary me-2"></i>
+            Reports & Analytics
+        </h1>
+    </div>
+</div>
+
+<!-- Report Navigation -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <ul class="nav nav-pills justify-content-center" id="reportTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="revenue-tab" data-bs-toggle="pill" data-bs-target="#revenue" type="button" role="tab">
+                            <i class="fas fa-dollar-sign me-2"></i>Revenue
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="products-tab" data-bs-toggle="pill" data-bs-target="#products" type="button" role="tab">
+                            <i class="fas fa-box me-2"></i>Products
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="staff-tab" data-bs-toggle="pill" data-bs-target="#staff" type="button" role="tab">
+                            <i class="fas fa-users me-2"></i>Staff
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="customers-tab" data-bs-toggle="pill" data-bs-target="#customers" type="button" role="tab">
+                            <i class="fas fa-user-friends me-2"></i>Customers
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-filter me-2"></i>Report Filters</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="reportStartDate" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="reportStartDate">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="reportEndDate" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="reportEndDate">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="reportGroupBy" class="form-label">Group By</label>
+                        <select class="form-control" id="reportGroupBy">
+                            <option value="day">Day</option>
+                            <option value="week">Week</option>
+                            <option value="month">Month</option>
+                            <option value="year">Year</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" onclick="generateActiveReport()">
+                            <i class="fas fa-chart-bar me-2"></i>Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Content -->
+<div class="tab-content" id="reportTabContent">
+    <!-- Revenue Report -->
+    <div class="tab-pane fade show active" id="revenue" role="tabpanel">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Revenue Report</h5>
+                <button class="btn btn-sm btn-success" onclick="exportCurrentReport('revenue')">
+                    <i class="fas fa-download me-1"></i>Export
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="revenueReportContent">
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Click "Generate Report" to view revenue analytics</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Report -->
+    <div class="tab-pane fade" id="products" role="tabpanel">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Product Performance Report</h5>
+                <button class="btn btn-sm btn-success" onclick="exportCurrentReport('products')">
+                    <i class="fas fa-download me-1"></i>Export
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="productsReportContent">
+                    <div class="text-center py-5">
+                        <i class="fas fa-box fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Click "Generate Report" to view product analytics</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Report -->
+    <div class="tab-pane fade" id="staff" role="tabpanel">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Staff Performance Report</h5>
+                <button class="btn btn-sm btn-success" onclick="exportCurrentReport('staff')">
+                    <i class="fas fa-download me-1"></i>Export
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="staffReportContent">
+                    <div class="text-center py-5">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Click "Generate Report" to view staff analytics</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customers Report -->
+    <div class="tab-pane fade" id="customers" role="tabpanel">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Customer Analytics Report</h5>
+                <button class="btn btn-sm btn-success" onclick="exportCurrentReport('customers')">
+                    <i class="fas fa-download me-1"></i>Export
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="customersReportContent">
+                    <div class="text-center py-5">
+                        <i class="fas fa-user-friends fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Click "Generate Report" to view customer analytics</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentReportData = {};
+let authToken = localStorage.getItem('authToken');
+
+function getActiveTab() {
+    const activeTab = document.querySelector('#reportTabs .nav-link.active');
+    return activeTab.id.replace('-tab', '');
+}
+
+async function generateActiveReport() {
+    const reportType = getActiveTab();
+    const startDate = document.getElementById('reportStartDate').value;
+    const endDate = document.getElementById('reportEndDate').value;
+    const groupBy = document.getElementById('reportGroupBy').value;
+    
+    await loadSpecificReport(reportType, { startDate, endDate, groupBy });
+}
+
+async function loadSpecificReport(type, filters = {}) {
+    const contentId = `${type}ReportContent`;
+    const container = document.getElementById(contentId);
+    
+    // Show loading
+    container.innerHTML = `
+        <div class="text-center py-4">
+            <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+            <p class="mt-2">Generating ${type} report...</p>
+        </div>
+    `;
+
+    try {
+        let url = `/api/dashboard/reports/${type}`;
+        const params = new URLSearchParams();
+        
+        Object.keys(filters).forEach(key => {
+            if (filters[key]) params.append(key, filters[key]);
+        });
+        
+        if (params.toString()) {
+            url += '?' + params.toString();
+        }
+
+        const response = await axios.get(url, {
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
+
+        if (response.data.success) {
+            currentReportData[type] = response.data.report;
+            displaySpecificReport(type, response.data.report, container);
+        }
+    } catch (error) {
+        console.error(`Error loading ${type} report:`, error);
+        container.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Failed to load ${type} report. Please make sure you are logged in as admin.
+            </div>
+        `;
+    }
+}
+
+function displaySpecificReport(type, data, container) {
+    switch (type) {
+        case 'revenue':
+            displayDetailedRevenueReport(container, data);
+            break;
+        case 'products':
+            displayDetailedProductReport(container, data);
+            break;
+        case 'staff':
+            displayDetailedStaffReport(container, data);
+            break;
+        case 'customers':
+            displayDetailedCustomerReport(container, data);
+            break;
+    }
+}
+
+function displayDetailedRevenueReport(container, data) {
+    container.innerHTML = `
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h4>$${data.summary.totalRevenue.toFixed(2)}</h4>
+                        <p class="mb-0">Total Revenue</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h4>${data.summary.totalOrders}</h4>
+                        <p class="mb-0">Total Orders</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h4>$${data.summary.avgOrderValue.toFixed(2)}</h4>
+                        <p class="mb-0">Avg Order Value</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h4>$${data.summary.maxOrderValue.toFixed(2)}</h4>
+                        <p class="mb-0">Highest Order</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Chart -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Revenue Trend</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="revenueChart" width="400" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Table -->
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Period</th>
+                        <th>Orders</th>
+                        <th>Revenue</th>
+                        <th>Avg Order Value</th>
+                        <th>Growth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.data.map((item, index) => {
+                        const prevItem = data.data[index - 1];
+                        const growth = prevItem ? ((item.totalRevenue - prevItem.totalRevenue) / prevItem.totalRevenue * 100) : 0;
+                        return `
+                            <tr>
+                                <td>${item._id}</td>
+                                <td>${item.totalOrders}</td>
+                                <td>$${item.totalRevenue.toFixed(2)}</td>
+                                <td>$${item.avgOrderValue.toFixed(2)}</td>
+                                <td>
+                                    <span class="badge bg-${growth >= 0 ? 'success' : 'danger'}">
+                                        ${growth >= 0 ? '+' : ''}${growth.toFixed(1)}%
+                                    </span>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    // Create revenue chart
+    setTimeout(() => {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.data.map(item => item._id),
+                datasets: [{
+                    label: 'Revenue',
+                    data: data.data.map(item => item.totalRevenue),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1
+                }, {
+                    label: 'Orders',
+                    data: data.data.map(item => item.totalOrders),
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    yAxisID: 'y1',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toFixed(2);
+                            }
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                    }
+                }
+            }
+        });
+    }, 100);
+}
+
+function displayDetailedProductReport(container, data) {
+    container.innerHTML = `
+        <!-- Category Performance -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Category Performance</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="categoryChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Category Revenue</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Quantity</th>
+                                        <th>Revenue</th>
+                                        <th>Products</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.categoryBreakdown.map(cat => `
+                                        <tr>
+                                            <td><span class="badge bg-primary">${cat._id}</span></td>
+                                            <td>${cat.totalQuantity}</td>
+                                            <td>$${cat.totalRevenue.toFixed(2)}</td>
+                                            <td>${cat.uniqueProductCount}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Products -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Product Performance Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Category</th>
+                                        <th>Price</th>
+                                        <th>Quantity Sold</th>
+                                        <th>Revenue</th>
+                                        <th>Orders</th>
+                                        <th>Avg Qty/Order</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.products.map(product => `
+                                        <tr>
+                                            <td><strong>${product.name}</strong></td>
+                                            <td><span class="badge bg-secondary">${product.category}</span></td>
+                                            <td>$${product.price.toFixed(2)}</td>
+                                            <td>${product.totalQuantitySold}</td>
+                                            <td>$${product.totalRevenue.toFixed(2)}</td>
+                                            <td>${product.orderCount}</td>
+                                            <td>${product.avgQuantityPerOrder.toFixed(1)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Create category chart
+    setTimeout(() => {
+        const ctx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.categoryBreakdown.map(cat => cat._id),
+                datasets: [{
+                    data: data.categoryBreakdown.map(cat => cat.totalRevenue),
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }, 100);
+}
+
+function displayDetailedStaffReport(container, data) {
+    container.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Staff Sales Performance</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Staff Member</th>
+                                        <th>Role</th>
+                                        <th>Orders</th>
+                                        <th>Revenue</th>
+                                        <th>Avg Order</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.staffPerformance.map(staff => `
+                                        <tr>
+                                            <td><strong>${staff.name}</strong></td>
+                                            <td><span class="badge bg-${staff.role === 'admin' ? 'danger' : 'primary'}">${staff.role}</span></td>
+                                            <td>${staff.totalOrders}</td>
+                                            <td>$${staff.totalRevenue.toFixed(2)}</td>
+                                            <td>$${staff.avgOrderValue.toFixed(2)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Shift & Working Hours</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Staff Member</th>
+                                        <th>Shifts</th>
+                                        <th>Total Hours</th>
+                                        <th>Avg Hours</th>
+                                        <th>Overtime</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.shiftStatistics.map(shift => `
+                                        <tr>
+                                            <td><strong>${shift.name}</strong></td>
+                                            <td>${shift.totalShifts}</td>
+                                            <td>${shift.totalHours}h</td>
+                                            <td>${shift.avgHoursPerShift}h</td>
+                                            <td>
+                                                <span class="badge bg-${shift.overtimeShifts > 0 ? 'warning' : 'success'}">
+                                                    ${shift.overtimeShifts}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function displayDetailedCustomerReport(container, data) {
+    container.innerHTML = `
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Top Customers</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Phone</th>
+                                        <th>Orders</th>
+                                        <th>Total Spent</th>
+                                        <th>Avg Order</th>
+                                        <th>Last Order</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.topCustomers.slice(0, 20).map(customer => `
+                                        <tr>
+                                            <td><strong>${customer._id}</strong></td>
+                                            <td>${customer.phone || 'N/A'}</td>
+                                            <td>${customer.totalOrders}</td>
+                                            <td>$${customer.totalSpent.toFixed(2)}</td>
+                                            <td>$${customer.avgOrderValue.toFixed(2)}</td>
+                                            <td>${new Date(customer.lastOrderDate).toLocaleDateString()}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">Customer Segments</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Spending Range</th>
+                                        <th>Customers</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.customerSegments.map(segment => `
+                                        <tr>
+                                            <td>$${segment._id === '1000+' ? '1000+' : segment._id}</td>
+                                            <td>${segment.count}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Order Frequency</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Orders</th>
+                                        <th>Customers</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.orderFrequency.map(freq => `
+                                        <tr>
+                                            <td>${freq._id === '20+' ? '20+' : freq._id}</td>
+                                            <td>${freq.customerCount}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function exportCurrentReport(type) {
+    if (!currentReportData[type]) {
+        alert('No report data to export. Please generate a report first.');
+        return;
+    }
+    
+    const dataStr = JSON.stringify(currentReportData[type], null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${type}_report_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+}
+
+// Set default date range (last 30 days)
+window.addEventListener('load', () => {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+    
+    document.getElementById('reportStartDate').value = startDate.toISOString().split('T')[0];
+    document.getElementById('reportEndDate').value = endDate.toISOString().split('T')[0];
+});
+</script>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

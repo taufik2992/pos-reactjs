@@ -1,51 +1,44 @@
-import React, { useState } from "react";
-import { Plus, Edit, Trash2, Search } from "lucide-react";
-import { Card } from "../../components/ui/Card";
-import { Button } from "../../components/ui/Button";
-import { Input } from "../../components/ui/Input";
-import { Modal } from "../../components/ui/Modal";
-import { FileUpload } from "../../components/ui/FileUpload";
-import { MenuItem } from "../../types";
-import { menuItems as initialMenuItems } from "../../data/menu";
-import toast from "react-hot-toast";
+import React, { useState } from 'react';
+import { Plus, Edit, Trash2, Search } from 'lucide-react';
+import { Card } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { Modal } from '../../components/ui/Modal';
+import { FileUpload } from '../../components/ui/FileUpload';
+import { MenuItem } from '../../types';
+import { menuItems as initialMenuItems } from '../../data/menu';
+import toast from 'react-hot-toast';
 
 export const MenuManagement: React.FC = () => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    category: "",
-    image: "",
-    stock: "",
+    name: '',
+    description: '',
+    price: '',
+    category: '',
+    image: '',
+    stock: '',
   });
 
-  const categories = [
-    "Coffee",
-    "Main Course",
-    "Salads",
-    "Desserts",
-    "Beverages",
-  ];
+  const categories = ['Coffee', 'Main Course', 'Salads', 'Desserts', 'Beverages'];
 
-  const filteredItems = menuItems.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredItems = menuItems.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAdd = () => {
     setEditingItem(null);
     setFormData({
-      name: "",
-      description: "",
-      price: "",
-      category: "",
-      image: "",
-      stock: "",
+      name: '',
+      description: '',
+      price: '',
+      category: '',
+      image: '',
+      stock: '',
     });
     setIsModalOpen(true);
   };
@@ -64,9 +57,9 @@ export const MenuManagement: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
-      setMenuItems((items) => items.filter((item) => item.id !== id));
-      toast.success("Item deleted successfully!");
+    if (window.confirm('Are you sure you want to delete this item?')) {
+      setMenuItems(items => items.filter(item => item.id !== id));
+      toast.success('Item deleted successfully!');
     }
   };
 
@@ -76,10 +69,10 @@ export const MenuManagement: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (editingItem) {
-      setMenuItems((items) =>
-        items.map((item) =>
+      setMenuItems(items =>
+        items.map(item =>
           item.id === editingItem.id
             ? {
                 ...item,
@@ -93,7 +86,7 @@ export const MenuManagement: React.FC = () => {
             : item
         )
       );
-      toast.success("Item updated successfully!");
+      toast.success('Item updated successfully!');
     } else {
       const newItem: MenuItem = {
         id: Date.now().toString(),
@@ -101,17 +94,15 @@ export const MenuManagement: React.FC = () => {
         description: formData.description,
         price: parseFloat(formData.price),
         category: formData.category,
-        image:
-          formData.image ||
-          "https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1",
+        image: formData.image || 'https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1',
         stock: parseInt(formData.stock),
         isAvailable: true,
         createdAt: new Date().toISOString(),
       };
-      setMenuItems((items) => [...items, newItem]);
-      toast.success("Item added successfully!");
+      setMenuItems(items => [...items, newItem]);
+      toast.success('Item added successfully!');
     }
-
+    
     setIsModalOpen(false);
   };
 
@@ -143,11 +134,7 @@ export const MenuManagement: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {filteredItems.map((item) => (
-            <Card
-              key={item.id}
-              className="hover:shadow-lg transition-shadow duration-200"
-              padding="sm"
-            >
+            <Card key={item.id} className="hover:shadow-lg transition-shadow duration-200" padding="sm">
               <img
                 src={item.image}
                 alt={item.name}
@@ -167,15 +154,13 @@ export const MenuManagement: React.FC = () => {
                 </p>
                 <div className="flex justify-between items-center">
                   <span className="text-base sm:text-lg font-bold text-amber-600">
-                    Rp. {item.price.toFixed(3)}
+                    ${item.price.toFixed(2)}
                   </span>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      item.stock < 10
-                        ? "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300"
-                        : "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300"
-                    }`}
-                  >
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    item.stock < 10 
+                      ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300'
+                      : 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300'
+                  }`}>
                     Stock: {item.stock}
                   </span>
                 </div>
@@ -216,7 +201,7 @@ export const MenuManagement: React.FC = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingItem ? "Edit Menu Item" : "Add New Menu Item"}
+        title={editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -226,16 +211,14 @@ export const MenuManagement: React.FC = () => {
             onChange={(value) => setFormData({ ...formData, name: value })}
             required
           />
-
+          
           <Input
             label="Description"
             value={formData.description}
-            onChange={(value) =>
-              setFormData({ ...formData, description: value })
-            }
+            onChange={(value) => setFormData({ ...formData, description: value })}
             required
           />
-
+          
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Price"
@@ -245,7 +228,7 @@ export const MenuManagement: React.FC = () => {
               onChange={(value) => setFormData({ ...formData, price: value })}
               required
             />
-
+            
             <Input
               label="Stock"
               type="number"
@@ -254,16 +237,14 @@ export const MenuManagement: React.FC = () => {
               required
             />
           </div>
-
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Category
             </label>
             <select
               value={formData.category}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               required
             >
@@ -275,14 +256,14 @@ export const MenuManagement: React.FC = () => {
               ))}
             </select>
           </div>
-
+          
           <FileUpload
             label="Item Image"
             value={formData.image}
             onChange={handleImageUpload}
             required={!editingItem}
           />
-
+          
           <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4">
             <Button
               type="button"
@@ -293,7 +274,7 @@ export const MenuManagement: React.FC = () => {
               Cancel
             </Button>
             <Button type="submit" className="w-full sm:w-auto">
-              {editingItem ? "Update" : "Add"} Item
+              {editingItem ? 'Update' : 'Add'} Item
             </Button>
           </div>
         </form>

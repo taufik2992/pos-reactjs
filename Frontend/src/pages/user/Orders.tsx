@@ -1,61 +1,42 @@
-import React, { useState } from "react";
-import {
-  Plus,
-  Minus,
-  ShoppingCart,
-  Search,
-  CreditCard,
-  Banknote,
-} from "lucide-react";
-import { Card } from "../../components/ui/Card";
-import { Button } from "../../components/ui/Button";
-import { Input } from "../../components/ui/Input";
-import { Modal } from "../../components/ui/Modal";
-import { MenuItem, OrderItem } from "../../types";
-import { menuItems } from "../../data/menu";
-import { useAuth } from "../../context/AuthContext";
-import toast from "react-hot-toast";
-import QRCode from "qrcode";
+import React, { useState } from 'react';
+import { Plus, Minus, ShoppingCart, Search, CreditCard, Banknote } from 'lucide-react';
+import { Card } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { Modal } from '../../components/ui/Modal';
+import { MenuItem, OrderItem } from '../../types';
+import { menuItems } from '../../data/menu';
+import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
+import QRCode from 'qrcode';
 
 export const Orders: React.FC = () => {
   const { user } = useAuth();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [cart, setCart] = useState<OrderItem[]>([]);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [customerName, setCustomerName] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "qr">("cash");
-  const [qrCodeData, setQrCodeData] = useState("");
+  const [customerName, setCustomerName] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'qr'>('cash');
+  const [qrCodeData, setQrCodeData] = useState('');
 
-  const categories = [
-    "All",
-    ...Array.from(new Set(menuItems.map((item) => item.category))),
-  ];
+  const categories = ['All', ...Array.from(new Set(menuItems.map(item => item.category)))];
 
-  const filteredItems = menuItems.filter((item) => {
-    const matchesSearch = item.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "All" || item.category === selectedCategory;
+  const filteredItems = menuItems.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
     return matchesSearch && matchesCategory && item.isAvailable;
   });
 
   const addToCart = (menuItem: MenuItem) => {
-    const existingItem = cart.find((item) => item.menuItemId === menuItem.id);
-
+    const existingItem = cart.find(item => item.menuItemId === menuItem.id);
+    
     if (existingItem) {
-      setCart(
-        cart.map((item) =>
-          item.menuItemId === menuItem.id
-            ? {
-                ...item,
-                quantity: item.quantity + 1,
-                subtotal: (item.quantity + 1) * item.price,
-              }
-            : item
-        )
-      );
+      setCart(cart.map(item =>
+        item.menuItemId === menuItem.id
+          ? { ...item, quantity: item.quantity + 1, subtotal: (item.quantity + 1) * item.price }
+          : item
+      ));
     } else {
       const newItem: OrderItem = {
         id: Date.now().toString(),
@@ -70,87 +51,97 @@ export const Orders: React.FC = () => {
   };
 
   const removeFromCart = (menuItemId: string) => {
-    const existingItem = cart.find((item) => item.menuItemId === menuItemId);
-
+    const existingItem = cart.find(item => item.menuItemId === menuItemId);
+    
     if (existingItem && existingItem.quantity > 1) {
-      setCart(
-        cart.map((item) =>
-          item.menuItemId === menuItemId
-            ? {
-                ...item,
-                quantity: item.quantity - 1,
-                subtotal: (item.quantity - 1) * item.price,
-              }
-            : item
-        )
-      );
+      setCart(cart.map(item =>
+        item.menuItemId === menuItemId
+          ? { ...item, quantity: item.quantity - 1, subtotal: (item.quantity - 1) * item.price }
+          : item
+      ));
     } else {
-      setCart(cart.filter((item) => item.menuItemId !== menuItemId));
+      setCart(cart.filter(item => item.menuItemId !== menuItemId));
     }
   };
 
-  const clearCart = () => setCart([]);
-  const getCartTotal = () =>
-    cart.reduce((total, item) => total + item.subtotal, 0);
-  const getMenuItemById = (id: string) =>
-    menuItems.find((item) => item.id === id);
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  const getCartTotal = () => {
+    return cart.reduce((total, item) => total + item.subtotal, 0);
+  };
+
+  const getMenuItemById = (id: string) => {
+    return menuItems.find(item => item.id === id);
+  };
 
   const handleCheckout = async () => {
-    if (cart.length === 0) return toast.error("Cart is empty");
+    if (cart.length === 0) {
+      toast.error('Cart is empty');
+      return;
+    }
 
-    if (paymentMethod === "qr") {
-      const qrData = `Restaurant Payment - Total: $${getCartTotal().toFixed(
-        2
-      )} - Order ID: ${Date.now()}`;
+    if (paymentMethod === 'qr') {
+      const qrData = `Restaurant Payment - Total: $${getCartTotal().toFixed(2)} - Order ID: ${Date.now()}`;
       try {
         const qrCode = await QRCode.toDataURL(qrData);
         setQrCodeData(qrCode);
-      } catch {
-        toast.error("Failed to generate QR code");
+      } catch (error) {
+        toast.error('Failed to generate QR code');
         return;
       }
     }
+
     setIsCheckoutOpen(true);
   };
 
   const completeOrder = () => {
-    toast.success(`Order #${Date.now()} completed successfully!`);
+    const orderId = Date.now().toString();
+    
+    toast.success(`Order #${orderId} completed successfully!`);
+    
     setCart([]);
-    setCustomerName("");
-    setQrCodeData("");
+    setCustomerName('');
     setIsCheckoutOpen(false);
+    setQrCodeData('');
+
+    setTimeout(() => {
+      toast.success('Receipt printed successfully!');
+    }, 1000);
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center sm:text-left">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white leading-snug">
-          🛒 Create Order
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+          Create Order
         </h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
-          Browse and select menu items for the current customer.
+        <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
+          Select items and create customer orders
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="lg:col-span-3 order-2 lg:order-1">
           <Card>
-            <div className="space-y-4 mb-6">
+            <div className="space-y-4 mb-4 sm:mb-6">
               <Input
                 value={searchTerm}
                 onChange={setSearchTerm}
                 placeholder="Search menu items..."
                 icon={Search}
               />
+              
               <div className="flex flex-wrap gap-2">
                 {categories.map((category) => (
                   <button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 ${
+                    className={`px-3 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors ${
                       selectedCategory === category
-                        ? "bg-amber-500 text-white border-amber-500 shadow-md"
-                        : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border-gray-300 dark:border-gray-600"
+                        ? 'bg-amber-600 text-white'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                     }`}
                   >
                     {category}
@@ -161,25 +152,22 @@ export const Orders: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {filteredItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-shadow"
-                >
+                <div key={item.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
                   <img
                     src={item.image}
                     alt={item.name}
-                    className="w-full h-72 object-cover"
+                    className="w-full h-24 sm:h-32 object-cover rounded-lg mb-3"
                   />
-                  <div className="p-4 space-y-2">
-                    <h3 className="text-base font-semibold text-gray-900 dark:text-white line-clamp-2">
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base line-clamp-2">
                       {item.name}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+                    <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm line-clamp-2">
                       {item.description}
                     </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-amber-600">
-                        Rp. {item.price.toFixed(3)}
+                    <div className="flex justify-between items-center">
+                      <span className="text-base sm:text-lg font-bold text-amber-600">
+                        ${item.price.toFixed(2)}
                       </span>
                       <Button
                         size="sm"
@@ -192,7 +180,7 @@ export const Orders: React.FC = () => {
                       </Button>
                     </div>
                     {item.stock < 10 && (
-                      <p className="text-xs text-red-500">
+                      <p className="text-xs sm:text-sm text-red-600 dark:text-red-400">
                         Only {item.stock} left
                       </p>
                     )}
@@ -200,27 +188,32 @@ export const Orders: React.FC = () => {
                 </div>
               ))}
             </div>
+
+            {filteredItems.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-500 dark:text-gray-400">
+                  No items found
+                </p>
+              </div>
+            )}
           </Card>
         </div>
 
         <div className="lg:col-span-1 order-1 lg:order-2">
           <Card className="lg:sticky lg:top-20" padding="sm">
-            <div className="flex justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-                <ShoppingCart className="w-5 h-5 mr-2" /> Cart ({cart.length})
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <span className="hidden sm:inline">Cart</span> ({cart.length})
               </h3>
               {cart.length > 0 && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={clearCart}
-                  className="text-xs"
-                >
+                <Button size="sm" variant="outline" onClick={clearCart} className="text-xs">
                   Clear
                 </Button>
               )}
             </div>
-            <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
+
+            <div className="space-y-2 sm:space-y-3 mb-4 max-h-48 sm:max-h-64 overflow-y-auto">
               {cart.length === 0 ? (
                 <p className="text-gray-500 dark:text-gray-400 text-center py-4 text-sm">
                   Cart is empty
@@ -229,26 +222,23 @@ export const Orders: React.FC = () => {
                 cart.map((item) => {
                   const menuItem = getMenuItemById(item.menuItemId);
                   return (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg p-3"
-                    >
+                    <div key={item.id} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
+                        <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">
                           {menuItem?.name}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          Rp. {item.price.toFixed(3)} each
+                          ${item.price.toFixed(2)} each
                         </p>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-1 sm:space-x-2">
                         <button
                           onClick={() => removeFromCart(item.menuItemId)}
                           className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
                         >
-                          <Minus className="w-4 h-4" />
+                          <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
-                        <span className="font-medium text-gray-900 dark:text-white text-sm min-w-[20px] text-center">
+                        <span className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm min-w-[20px] text-center">
                           {item.quantity}
                         </span>
                         <button
@@ -258,12 +248,12 @@ export const Orders: React.FC = () => {
                           }}
                           className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
                         >
-                          <Plus className="w-4 h-4" />
+                          <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
                       </div>
                       <div className="ml-2 text-right">
-                        <p className="font-medium text-gray-900 dark:text-white text-sm">
-                          Rp. {item.subtotal.toFixed(3)}
+                        <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm">
+                          ${item.subtotal.toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -271,25 +261,28 @@ export const Orders: React.FC = () => {
                 })
               )}
             </div>
+
             {cart.length > 0 && (
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Total:
-                  </span>
-                  <span className="text-xl font-bold text-amber-600">
-                    Rp. {getCartTotal().toFixed(3)}
-                  </span>
+              <>
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                      Total:
+                    </span>
+                    <span className="text-lg sm:text-xl font-bold text-amber-600">
+                      ${getCartTotal().toFixed(2)}
+                    </span>
+                  </div>
+                  <Button
+                    onClick={handleCheckout}
+                    className="w-full"
+                    size="lg"
+                    icon={CreditCard}
+                  >
+                    Checkout
+                  </Button>
                 </div>
-                <Button
-                  onClick={handleCheckout}
-                  className="w-full"
-                  size="lg"
-                  icon={CreditCard}
-                >
-                  Checkout
-                </Button>
-              </div>
+              </>
             )}
           </Card>
         </div>
@@ -298,57 +291,58 @@ export const Orders: React.FC = () => {
       <Modal
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
-        title="🧾 Complete Your Order"
+        title="Checkout"
         size="lg"
       >
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <Input
             label="Customer Name (Optional)"
             value={customerName}
             onChange={setCustomerName}
             placeholder="Enter customer name"
           />
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
               Payment Method
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
-                onClick={() => setPaymentMethod("cash")}
-                className={`p-4 border rounded-lg flex items-center justify-center space-x-2 transition-colors ${
-                  paymentMethod === "cash"
-                    ? "border-amber-600 bg-amber-50 dark:bg-amber-900/20 text-amber-600"
-                    : "border-gray-300 dark:border-gray-600 hover:border-gray-400"
+                onClick={() => setPaymentMethod('cash')}
+                className={`p-3 sm:p-4 border rounded-lg flex items-center justify-center space-x-2 transition-colors ${
+                  paymentMethod === 'cash'
+                    ? 'border-amber-600 bg-amber-50 dark:bg-amber-900/20 text-amber-600'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
                 }`}
               >
-                <Banknote className="w-5 h-5" />{" "}
-                <span className="text-base">Cash</span>
+                <Banknote className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-sm sm:text-base">Cash</span>
               </button>
               <button
-                onClick={() => setPaymentMethod("qr")}
-                className={`p-4 border rounded-lg flex items-center justify-center space-x-2 transition-colors ${
-                  paymentMethod === "qr"
-                    ? "border-amber-600 bg-amber-50 dark:bg-amber-900/20 text-amber-600"
-                    : "border-gray-300 dark:border-gray-600 hover:border-gray-400"
+                onClick={() => setPaymentMethod('qr')}
+                className={`p-3 sm:p-4 border rounded-lg flex items-center justify-center space-x-2 transition-colors ${
+                  paymentMethod === 'qr'
+                    ? 'border-amber-600 bg-amber-50 dark:bg-amber-900/20 text-amber-600'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
                 }`}
               >
-                <CreditCard className="w-5 h-5" />{" "}
-                <span className="text-base">QR Code</span>
+                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-sm sm:text-base">QR Code</span>
               </button>
             </div>
           </div>
-          {paymentMethod === "qr" && qrCodeData && (
+
+          {paymentMethod === 'qr' && qrCodeData && (
             <div className="text-center">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                 Scan QR Code to Pay
               </p>
-              <img
-                src={qrCodeData}
-                alt="QR Code"
-                className="max-w-full h-auto mx-auto"
-              />
+              <div className="flex justify-center">
+                <img src={qrCodeData} alt="QR Code" className="max-w-full h-auto" />
+              </div>
             </div>
           )}
+
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
             <div className="space-y-2">
               {cart.map((item) => {
@@ -359,7 +353,7 @@ export const Orders: React.FC = () => {
                       {menuItem?.name} x {item.quantity}
                     </span>
                     <span className="text-gray-900 dark:text-white font-medium">
-                      Rp. {item.subtotal.toFixed(3)}
+                      ${item.subtotal.toFixed(2)}
                     </span>
                   </div>
                 );
@@ -367,12 +361,13 @@ export const Orders: React.FC = () => {
               <div className="border-t border-gray-200 dark:border-gray-700 pt-2 flex justify-between font-semibold">
                 <span className="text-gray-900 dark:text-white">Total:</span>
                 <span className="text-amber-600 text-lg">
-                  Rp. {getCartTotal().toFixed(3)}
+                  ${getCartTotal().toFixed(2)}
                 </span>
               </div>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+
+          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-3">
             <Button
               variant="outline"
               onClick={() => setIsCheckoutOpen(false)}
@@ -380,7 +375,10 @@ export const Orders: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button onClick={completeOrder} className="w-full sm:flex-1">
+            <Button
+              onClick={completeOrder}
+              className="w-full sm:flex-1"
+            >
               Complete Order
             </Button>
           </div>

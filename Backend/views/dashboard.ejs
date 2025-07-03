@@ -7,6 +7,7 @@
     </div>
 </div>
 
+<!-- Overview Stats Cards -->
 <div class="row mb-4">
     <div class="col-md-3 mb-3">
         <div class="card text-white bg-primary">
@@ -70,6 +71,104 @@
     </div>
 </div>
 
+<!-- Statistics Dashboard -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Live Statistics</h5>
+                <button class="btn btn-sm btn-primary" onclick="loadDashboardStats()">
+                    <i class="fas fa-sync-alt me-1"></i>Refresh
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="statsContainer">
+                    <div class="text-center py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                        <p class="mt-2">Loading statistics...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reports Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Reports</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-primary w-100" onclick="loadReport('revenue')">
+                            <i class="fas fa-dollar-sign me-2"></i>Revenue Report
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-success w-100" onclick="loadReport('products')">
+                            <i class="fas fa-box me-2"></i>Product Report
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-info w-100" onclick="loadReport('staff')">
+                            <i class="fas fa-users me-2"></i>Staff Report
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-warning w-100" onclick="loadReport('customers')">
+                            <i class="fas fa-user-friends me-2"></i>Customer Report
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Report Filters -->
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <label for="startDate" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="startDate">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="endDate" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="endDate">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="groupBy" class="form-label">Group By</label>
+                        <select class="form-control" id="groupBy">
+                            <option value="day">Day</option>
+                            <option value="week">Week</option>
+                            <option value="month">Month</option>
+                            <option value="year">Year</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Results -->
+<div class="row mb-4" id="reportSection" style="display: none;">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0" id="reportTitle"><i class="fas fa-chart-line me-2"></i>Report Results</h5>
+                <button class="btn btn-sm btn-secondary" onclick="exportReport()">
+                    <i class="fas fa-download me-1"></i>Export
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="reportContainer">
+                    <!-- Report content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders -->
 <div class="row">
     <div class="col-12">
         <div class="card">
@@ -122,3 +221,497 @@
         </div>
     </div>
 </div>
+
+<script>
+let currentReport = null;
+let authToken = localStorage.getItem('authToken');
+
+// Load dashboard statistics
+async function loadDashboardStats() {
+    try {
+        const response = await axios.get('/api/dashboard/stats', {
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
+
+        if (response.data.success) {
+            displayDashboardStats(response.data.stats);
+        }
+    } catch (error) {
+        console.error('Error loading dashboard stats:', error);
+        document.getElementById('statsContainer').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Failed to load statistics. Please make sure you are logged in.
+            </div>
+        `;
+    }
+}
+
+function displayDashboardStats(stats) {
+    const container = document.getElementById('statsContainer');
+    
+    container.innerHTML = `
+        <!-- Revenue Overview -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h4>$${stats.revenue.total.toFixed(2)}</h4>
+                        <p class="mb-0">Total Revenue</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h4>$${stats.revenue.today.toFixed(2)}</h4>
+                        <p class="mb-0">Today's Revenue</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h4>$${stats.revenue.week.toFixed(2)}</h4>
+                        <p class="mb-0">This Week</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h4>$${stats.overview.avgOrderValue}</h4>
+                        <p class="mb-0">Avg Order Value</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Daily Sales (Last 7 Days)</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dailySalesChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Order Status Distribution</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="orderStatusChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Selling Items -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Top Selling Items</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Category</th>
+                                        <th>Quantity Sold</th>
+                                        <th>Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${stats.topSellingItems.map(item => `
+                                        <tr>
+                                            <td>${item.menuItem.name}</td>
+                                            <td><span class="badge bg-secondary">${item.menuItem.category}</span></td>
+                                            <td>${item.totalQuantity}</td>
+                                            <td>$${item.totalRevenue.toFixed(2)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Create charts
+    createDailySalesChart(stats.dailySales);
+    createOrderStatusChart(stats.orderStatus);
+}
+
+function createDailySalesChart(dailySales) {
+    const ctx = document.getElementById('dailySalesChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dailySales.map(day => new Date(day.date).toLocaleDateString()),
+            datasets: [{
+                label: 'Revenue',
+                data: dailySales.map(day => day.revenue),
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toFixed(2);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createOrderStatusChart(orderStatus) {
+    const ctx = document.getElementById('orderStatusChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: orderStatus.map(status => status._id.charAt(0).toUpperCase() + status._id.slice(1)),
+            datasets: [{
+                data: orderStatus.map(status => status.count),
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+// Load specific reports
+async function loadReport(type) {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const groupBy = document.getElementById('groupBy').value;
+    
+    let url = `/api/dashboard/reports/${type}`;
+    const params = new URLSearchParams();
+    
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    if (type === 'revenue') params.append('groupBy', groupBy);
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+
+    try {
+        const response = await axios.get(url, {
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
+
+        if (response.data.success) {
+            currentReport = { type, data: response.data.report };
+            displayReport(type, response.data.report);
+            document.getElementById('reportSection').style.display = 'block';
+            document.getElementById('reportTitle').innerHTML = `
+                <i class="fas fa-chart-line me-2"></i>${type.charAt(0).toUpperCase() + type.slice(1)} Report
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading report:', error);
+        alert('Failed to load report. Please make sure you are logged in as admin.');
+    }
+}
+
+function displayReport(type, data) {
+    const container = document.getElementById('reportContainer');
+    
+    switch (type) {
+        case 'revenue':
+            displayRevenueReport(container, data);
+            break;
+        case 'products':
+            displayProductReport(container, data);
+            break;
+        case 'staff':
+            displayStaffReport(container, data);
+            break;
+        case 'customers':
+            displayCustomerReport(container, data);
+            break;
+    }
+}
+
+function displayRevenueReport(container, data) {
+    container.innerHTML = `
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h5>$${data.summary.totalRevenue.toFixed(2)}</h5>
+                        <small>Total Revenue</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h5>${data.summary.totalOrders}</h5>
+                        <small>Total Orders</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h5>$${data.summary.avgOrderValue.toFixed(2)}</h5>
+                        <small>Avg Order Value</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h5>$${data.summary.maxOrderValue.toFixed(2)}</h5>
+                        <small>Highest Order</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Period</th>
+                        <th>Orders</th>
+                        <th>Revenue</th>
+                        <th>Avg Order Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.data.map(item => `
+                        <tr>
+                            <td>${item._id}</td>
+                            <td>${item.totalOrders}</td>
+                            <td>$${item.totalRevenue.toFixed(2)}</td>
+                            <td>$${item.avgOrderValue.toFixed(2)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function displayProductReport(container, data) {
+    container.innerHTML = `
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h6>Category Performance</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Quantity</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.categoryBreakdown.map(cat => `
+                                <tr>
+                                    <td>${cat._id}</td>
+                                    <td>${cat.totalQuantity}</td>
+                                    <td>$${cat.totalRevenue.toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6>Top Products</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Sold</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.products.slice(0, 10).map(product => `
+                                <tr>
+                                    <td>${product.name}</td>
+                                    <td>${product.totalQuantitySold}</td>
+                                    <td>$${product.totalRevenue.toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function displayStaffReport(container, data) {
+    container.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Staff Performance</h6>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Orders</th>
+                                <th>Revenue</th>
+                                <th>Avg Order</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.staffPerformance.map(staff => `
+                                <tr>
+                                    <td>${staff.name}</td>
+                                    <td>${staff.totalOrders}</td>
+                                    <td>$${staff.totalRevenue.toFixed(2)}</td>
+                                    <td>$${staff.avgOrderValue.toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6>Shift Statistics</h6>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Shifts</th>
+                                <th>Total Hours</th>
+                                <th>Overtime</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.shiftStatistics.map(shift => `
+                                <tr>
+                                    <td>${shift.name}</td>
+                                    <td>${shift.totalShifts}</td>
+                                    <td>${shift.totalHours}h</td>
+                                    <td>${shift.overtimeShifts}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function displayCustomerReport(container, data) {
+    container.innerHTML = `
+        <div class="row">
+            <div class="col-md-8">
+                <h6>Top Customers</h6>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Orders</th>
+                                <th>Total Spent</th>
+                                <th>Avg Order</th>
+                                <th>Last Order</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.topCustomers.slice(0, 10).map(customer => `
+                                <tr>
+                                    <td>${customer._id}</td>
+                                    <td>${customer.totalOrders}</td>
+                                    <td>$${customer.totalSpent.toFixed(2)}</td>
+                                    <td>$${customer.avgOrderValue.toFixed(2)}</td>
+                                    <td>${new Date(customer.lastOrderDate).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <h6>Customer Segments</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Spending Range</th>
+                                <th>Customers</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.customerSegments.map(segment => `
+                                <tr>
+                                    <td>$${segment._id === '1000+' ? '1000+' : segment._id}</td>
+                                    <td>${segment.count}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function exportReport() {
+    if (!currentReport) {
+        alert('No report to export');
+        return;
+    }
+    
+    const dataStr = JSON.stringify(currentReport.data, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${currentReport.type}_report_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+}
+
+// Load dashboard stats on page load
+window.addEventListener('load', () => {
+    if (authToken) {
+        loadDashboardStats();
+    }
+});
+</script>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

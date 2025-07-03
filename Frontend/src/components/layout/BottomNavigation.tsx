@@ -11,7 +11,7 @@ export const BottomNavigation: React.FC = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 safe-area-pb">
-      <div className="flex justify-around items-center h-16 px-2">
+      <div className="flex justify-around items-center h-14 md:16 px-2">
         {routes.map((route) => (
           <NavLink
             key={route.path}

@@ -1,19 +1,21 @@
-import React from "react";
-import { DollarSign, ShoppingBag, AlertTriangle, Users } from "lucide-react";
-import { StatsCard } from "../../components/dashboard/StatsCard";
-import { SalesChart } from "../../components/dashboard/SalesChart";
-import { Card } from "../../components/ui/Card";
-import { menuItems } from "../../data/menu";
-import { orders } from "../../data/orders";
-import { users } from "../../data/users";
+import React from 'react';
+import { DollarSign, ShoppingBag, AlertTriangle, Users } from 'lucide-react';
+import { StatsCard } from '../../components/dashboard/StatsCard';
+import { SalesChart } from '../../components/dashboard/SalesChart';
+import { Card } from '../../components/ui/Card';
+import { menuItems } from '../../data/menu';
+import { orders } from '../../data/orders';
+import { users } from '../../data/users';
 
 export const AdminDashboard: React.FC = () => {
   const todaySales = orders.reduce((sum, order) => sum + order.total, 0);
   const todayOrders = orders.length;
-  const lowStockItems = menuItems.filter((item) => item.stock < 10);
-  const totalUsers = users.filter((user) => user.role === "cashier").length;
+  const lowStockItems = menuItems.filter(item => item.stock < 10);
+  const totalUsers = users.filter(user => user.role === 'cashier').length;
 
-  const topProducts = menuItems.sort((a, b) => b.stock - a.stock).slice(0, 5);
+  const topProducts = menuItems
+    .sort((a, b) => b.stock - a.stock)
+    .slice(0, 5);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -29,7 +31,7 @@ export const AdminDashboard: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatsCard
           title="Today's Sales"
-          value={`Rp. ${todaySales.toFixed(3)}`}
+          value={`$${todaySales.toFixed(2)}`}
           icon={DollarSign}
           color="green"
           change="+12% from yesterday"
@@ -60,20 +62,17 @@ export const AdminDashboard: React.FC = () => {
         <div className="xl:col-span-2">
           <SalesChart />
         </div>
-
+        
         <Card>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Top Products
           </h3>
           <div className="space-y-3">
             {topProducts.map((product) => (
-              <div
-                key={product.id}
-                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-              >
+              <div key={product.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <div className="flex items-center space-x-3 min-w-0 flex-1">
-                  <img
-                    src={product.image}
+                  <img 
+                    src={product.image} 
                     alt={product.name}
                     className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover flex-shrink-0"
                   />
@@ -82,7 +81,7 @@ export const AdminDashboard: React.FC = () => {
                       {product.name}
                     </p>
                     <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                      Rp. {product.price.toFixed(3)}
+                      ${product.price}
                     </p>
                   </div>
                 </div>
@@ -103,13 +102,10 @@ export const AdminDashboard: React.FC = () => {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {lowStockItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800"
-              >
+              <div key={item.id} className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                 <div className="flex items-center space-x-3 min-w-0 flex-1">
-                  <img
-                    src={item.image}
+                  <img 
+                    src={item.image} 
                     alt={item.name}
                     className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover flex-shrink-0"
                   />

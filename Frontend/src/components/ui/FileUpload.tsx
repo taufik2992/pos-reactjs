@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react";
-import { Upload, X } from "lucide-react";
+import React, { useRef, useState } from 'react';
+import { Upload, X, Image } from 'lucide-react';
 
 interface FileUploadProps {
   label?: string;
@@ -35,7 +35,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-
+    
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       handleFileSelect(files[0]);
@@ -60,9 +60,9 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   const clearFile = () => {
-    onChange(null, "");
+    onChange(null, '');
     if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
   };
 
@@ -74,7 +74,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
-
+      
       <div className="space-y-3">
         {/* File drop zone */}
         <div
@@ -84,10 +84,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           onClick={() => fileInputRef.current?.click()}
           className={`relative border-2 border-dashed rounded-lg p-4 sm:p-6 text-center cursor-pointer transition-all duration-200 ${
             dragOver
-              ? "border-amber-500 bg-amber-50 dark:bg-amber-900/20"
+              ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20'
               : error
-              ? "border-red-500 bg-red-50 dark:bg-red-900/20"
-              : "border-gray-300 dark:border-gray-600 hover:border-amber-500 hover:bg-gray-50 dark:hover:bg-gray-700"
+              ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
+              : 'border-gray-300 dark:border-gray-600 hover:border-amber-500 hover:bg-gray-50 dark:hover:bg-gray-700'
           }`}
         >
           <input
@@ -97,17 +97,14 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             onChange={handleFileInputChange}
             className="hidden"
           />
-
+          
           <div className="flex flex-col items-center space-y-2">
             <Upload className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
             <div className="text-sm sm:text-base">
               <span className="font-medium text-gray-900 dark:text-white">
                 Click to upload
               </span>
-              <span className="text-gray-500 dark:text-gray-400">
-                {" "}
-                or drag and drop
-              </span>
+              <span className="text-gray-500 dark:text-gray-400"> or drag and drop</span>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               PNG, JPG, GIF up to 10MB
