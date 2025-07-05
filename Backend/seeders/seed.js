@@ -21,7 +21,7 @@ const seedUsers = async () => {
     {
       nama: "Admin User",
       email: "admin@coffee.com",
-      password: await bcrypt.hash("password123", 10), // Hash password
+      password: await bcrypt.hash("password123", 10),
       role: "admin",
       avatar:
         "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1",
@@ -30,7 +30,7 @@ const seedUsers = async () => {
     {
       nama: "Sarah Johnson",
       email: "cashier1@coffee.com",
-      password: await bcrypt.hash("password123", 10), // Hash password
+      password: await bcrypt.hash("password123", 10),
       role: "cashier",
       avatar:
         "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1",
@@ -39,7 +39,7 @@ const seedUsers = async () => {
     {
       nama: "Mike Wilson",
       email: "cashier2@coffee.com",
-      password: await bcrypt.hash("password123", 10), // Hash password
+      password: await bcrypt.hash("password123", 10),
       role: "cashier",
       avatar:
         "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1",
@@ -59,7 +59,7 @@ const seedMenu = async () => {
     {
       name: "Espresso",
       description: "Rich and bold espresso shot made from premium coffee beans",
-      price: 2.5,
+      price: 25000, // IDR
       category: "Coffee",
       image:
         "https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1",
@@ -69,7 +69,7 @@ const seedMenu = async () => {
     {
       name: "Cappuccino",
       description: "Classic Italian coffee with steamed milk and foam",
-      price: 4.0,
+      price: 35000, // IDR
       category: "Coffee",
       image:
         "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1",
@@ -79,7 +79,7 @@ const seedMenu = async () => {
     {
       name: "Latte",
       description: "Smooth espresso with steamed milk and light foam",
-      price: 4.5,
+      price: 40000, // IDR
       category: "Coffee",
       image:
         "https://images.pexels.com/photos/324028/pexels-photo-324028.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1",
@@ -89,7 +89,7 @@ const seedMenu = async () => {
     {
       name: "Green Tea",
       description: "Fresh organic green tea with antioxidants",
-      price: 3.0,
+      price: 20000, // IDR
       category: "Tea",
       image:
         "https://images.pexels.com/photos/1417945/pexels-photo-1417945.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1",
@@ -99,7 +99,7 @@ const seedMenu = async () => {
     {
       name: "Croissant",
       description: "Buttery, flaky French pastry perfect with coffee",
-      price: 3.5,
+      price: 30000, // IDR
       category: "Food",
       image:
         "https://images.pexels.com/photos/1070850/pexels-photo-1070850.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1",
@@ -109,7 +109,7 @@ const seedMenu = async () => {
     {
       name: "Chocolate Cake",
       description: "Rich, moist chocolate cake with dark chocolate frosting",
-      price: 5.5,
+      price: 45000, // IDR
       category: "Dessert",
       image:
         "https://images.pexels.com/photos/291528/pexels-photo-291528.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1",
@@ -119,7 +119,7 @@ const seedMenu = async () => {
     {
       name: "Iced Americano",
       description: "Refreshing iced coffee with bold espresso flavor",
-      price: 3.75,
+      price: 32000, // IDR
       category: "Beverage",
       image:
         "https://images.pexels.com/photos/1251175/pexels-photo-1251175.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1",
@@ -129,11 +129,31 @@ const seedMenu = async () => {
     {
       name: "Fruit Smoothie",
       description: "Fresh mixed fruit smoothie with yogurt and honey",
-      price: 4.25,
+      price: 38000, // IDR
       category: "Beverage",
       image:
         "https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1",
       stock: 20,
+      isAvailable: true,
+    },
+    {
+      name: "Nasi Goreng",
+      description: "Indonesian fried rice with chicken and vegetables",
+      price: 55000, // IDR
+      category: "Food",
+      image:
+        "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1",
+      stock: 20,
+      isAvailable: true,
+    },
+    {
+      name: "Mie Ayam",
+      description: "Indonesian chicken noodle soup with vegetables",
+      price: 45000, // IDR
+      category: "Food",
+      image:
+        "https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1",
+      stock: 18,
       isAvailable: true,
     },
   ];
@@ -167,7 +187,7 @@ const seedOrders = async (users, menuItems) => {
       paymentMethod: "cash",
       status: "completed",
       customerName: "John Doe",
-      customerPhone: "+1234567890",
+      customerPhone: "+6281234567890",
       notes: "Regular customer",
     },
     {
@@ -187,10 +207,10 @@ const seedOrders = async (users, menuItems) => {
         },
       ],
       total: menuItems[2].price * 1 + menuItems[4].price * 2,
-      paymentMethod: "card",
+      paymentMethod: "midtrans",
       status: "completed",
       customerName: "Jane Smith",
-      customerPhone: "+1234567891",
+      customerPhone: "+6281234567891",
       notes: "To go order",
     },
     {
@@ -210,27 +230,56 @@ const seedOrders = async (users, menuItems) => {
         },
       ],
       total: menuItems[5].price * 1 + menuItems[1].price * 2,
-      paymentMethod: "digital",
+      paymentMethod: "cash",
       status: "processing",
       customerName: "Bob Johnson",
-      customerPhone: "+1234567892",
+      customerPhone: "+6281234567892",
     },
     {
       cashierId: users[2]._id,
       items: [
         {
-          menuItemId: menuItems[6]._id, // Iced Americano
-          quantity: 3,
-          price: menuItems[6].price,
-          subtotal: menuItems[6].price * 3,
+          menuItemId: menuItems[8]._id, // Nasi Goreng
+          quantity: 2,
+          price: menuItems[8].price,
+          subtotal: menuItems[8].price * 2,
+        },
+        {
+          menuItemId: menuItems[3]._id, // Green Tea
+          quantity: 2,
+          price: menuItems[3].price,
+          subtotal: menuItems[3].price * 2,
         },
       ],
-      total: menuItems[6].price * 3,
+      total: menuItems[8].price * 2 + menuItems[3].price * 2,
       paymentMethod: "cash",
-      status: "pending",
+      status: "completed",
       customerName: "Alice Brown",
-      customerPhone: "+1234567893",
-      notes: "Large order for office",
+      customerPhone: "+6281234567893",
+      notes: "Lunch order for office",
+    },
+    {
+      cashierId: users[1]._id,
+      items: [
+        {
+          menuItemId: menuItems[9]._id, // Mie Ayam
+          quantity: 1,
+          price: menuItems[9].price,
+          subtotal: menuItems[9].price * 1,
+        },
+        {
+          menuItemId: menuItems[6]._id, // Iced Americano
+          quantity: 1,
+          price: menuItems[6].price,
+          subtotal: menuItems[6].price * 1,
+        },
+      ],
+      total: menuItems[9].price * 1 + menuItems[6].price * 1,
+      paymentMethod: "midtrans",
+      status: "completed",
+      customerName: "David Wilson",
+      customerPhone: "+6281234567894",
+      notes: "Dine in",
     },
   ];
 
@@ -253,7 +302,8 @@ const seedDatabase = async () => {
     console.log("\n📋 Seeded Data Summary:");
     console.log(`👥 Users: ${users.length}`);
     console.log(`🍽️  Menu Items: ${menuItems.length}`);
-    console.log(`📋 Orders: 4`);
+    console.log(`📋 Orders: 5`);
+    console.log(`💰 Currency: IDR (Indonesian Rupiah)`);
 
     console.log("\n🔐 Demo Login Credentials:");
     console.log("Admin: admin@coffee.com / password123");

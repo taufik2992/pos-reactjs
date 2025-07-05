@@ -12,7 +12,7 @@ export interface MenuItem {
   id: string;
   name: string;
   description: string;
-  price: number;
+  price: number; // In IDR
   category: string;
   image: string;
   stock: number;
@@ -24,16 +24,16 @@ export interface OrderItem {
   id: string;
   menuItemId: string;
   quantity: number;
-  price: number;
-  subtotal: number;
+  price: number; // In IDR
+  subtotal: number; // In IDR
 }
 
 export interface Order {
   id: string;
   cashierId: string;
   items: OrderItem[];
-  total: number;
-  paymentMethod: 'cash' | 'card' | 'digital' | 'midtrans';
+  total: number; // In IDR
+  paymentMethod: 'cash' | 'midtrans';
   status: 'pending' | 'processing' | 'completed' | 'cancelled';
   createdAt: string;
   customerName?: string;
@@ -47,7 +47,7 @@ export interface AuthState {
 }
 
 export interface DashboardStats {
-  todaySales: number;
+  todaySales: number; // In IDR
   todayOrders: number;
   lowStock: number;
   totalUsers: number;
@@ -55,6 +55,6 @@ export interface DashboardStats {
 
 export interface SalesData {
   date: string;
-  sales: number;
+  sales: number; // In IDR
   orders: number;
 }

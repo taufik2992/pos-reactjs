@@ -31,6 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             });
           }
         } catch (error) {
+          console.error('Auth init error:', error);
           localStorage.removeItem('auth-token');
           localStorage.removeItem('pos-user');
         }
@@ -52,12 +53,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('pos-user', JSON.stringify(user));
         
         setAuthState({ user, isAuthenticated: true });
+        
+        toast.success(`Selamat datang, ${user.nama}!`);
         return true;
       }
       
       return false;
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Login failed';
+      console.error('Login error:', error);
+      const message = error.response?.data?.message || 'Login gagal';
       toast.error(message);
       return false;
     }
@@ -66,6 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       await authAPI.logout();
+      toast.success('Logout berhasil');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

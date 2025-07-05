@@ -5,10 +5,9 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { MenuItem, OrderItem } from '../../types';
-import { menuAPI, orderAPI, paymentAPI } from '../../services/api';
+import { menuAPI, orderAPI, paymentAPI, formatIDR } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-import QRCode from 'qrcode';
 
 export const Orders: React.FC = () => {
   const { user } = useAuth();
@@ -21,7 +20,6 @@ export const Orders: React.FC = () => {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'midtrans'>('cash');
-  const [qrCodeData, setQrCodeData] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -37,7 +35,7 @@ export const Orders: React.FC = () => {
         setMenuItems(response.data.menuItems);
       }
     } catch (error) {
-      toast.error('Failed to load menu items');
+      toast.error('Gagal memuat item menu');
     } finally {
       setLoading(false);
     }
@@ -79,7 +77,7 @@ export const Orders: React.FC = () => {
       };
       setCart([...cart, newItem]);
     }
-    toast.success(`${menuItem.name} added to cart`);
+    toast.success(`${menuItem.name} ditambahkan ke keranjang`);
   };
 
   const removeFromCart = (menuItemId: string) => {
@@ -110,7 +108,7 @@ export const Orders: React.FC = () => {
 
   const handleCheckout = async () => {
     if (cart.length === 0) {
-      toast.error('Cart is empty');
+      toast.error('Keranjang kosong');
       return;
     }
 
@@ -144,26 +142,25 @@ export const Orders: React.FC = () => {
             if (paymentResponse.data.success) {
               // Open payment URL in new window
               window.open(paymentResponse.data.paymentUrl, '_blank');
-              toast.success('Payment link opened in new tab');
+              toast.success('Link pembayaran dibuka di tab baru');
             }
           } catch (paymentError) {
-            toast.error('Failed to create payment link');
+            toast.error('Gagal membuat link pembayaran');
           }
         }
         
-        toast.success(`Order #${order._id.slice(-6)} created successfully!`);
+        toast.success(`Pesanan #${order._id.slice(-6)} berhasil dibuat!`);
         
         setCart([]);
         setCustomerName('');
         setCustomerPhone('');
         setIsCheckoutOpen(false);
-        setQrCodeData('');
         
         // Reload menu items to update stock
         loadMenuItems();
       }
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Failed to create order';
+      const message = error.response?.data?.message || 'Gagal membuat pesanan';
       toast.error(message);
     } finally {
       setSubmitting(false);
@@ -182,10 +179,10 @@ export const Orders: React.FC = () => {
     <div className="space-y-4 sm:space-y-6">
       <div className="text-center sm:text-left">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-          Create Order
+          Buat Pesanan
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
-          Select items and create customer orders
+          Pilih item dan buat pesanan pelanggan
         </p>
       </div>
 
@@ -196,7 +193,7 @@ export const Orders: React.FC = () => {
               <Input
                 value={searchTerm}
                 onChange={setSearchTerm}
-                placeholder="Search menu items..."
+                placeholder="Cari item menu..."
                 icon={Search}
               />
               
@@ -211,7 +208,7 @@ export const Orders: React.FC = () => {
                         : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                     }`}
                   >
-                    {category}
+                    {category === 'All' ? 'Semua' : category}
                   </button>
                 ))}
               </div>
@@ -234,7 +231,7 @@ export const Orders: React.FC = () => {
                     </p>
                     <div className="flex justify-between items-center">
                       <span className="text-base sm:text-lg font-bold text-amber-600">
-                        ${item.price.toFixed(2)}
+                        {formatIDR(item.price)}
                       </span>
                       <Button
                         size="sm"
@@ -243,12 +240,12 @@ export const Orders: React.FC = () => {
                         disabled={item.stock === 0}
                         className="text-xs"
                       >
-                        Add
+                        Tambah
                       </Button>
                     </div>
                     {item.stock < 10 && (
                       <p className="text-xs sm:text-sm text-red-600 dark:text-red-400">
-                        Only {item.stock} left
+                        Tersisa {item.stock}
                       </p>
                     )}
                   </div>
@@ -259,7 +256,7 @@ export const Orders: React.FC = () => {
             {filteredItems.length === 0 && (
               <div className="text-center py-8">
                 <p className="text-gray-500 dark:text-gray-400">
-                  No items found
+                  Tidak ada item ditemukan
                 </p>
               </div>
             )}
@@ -271,11 +268,11 @@ export const Orders: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                 <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                <span className="hidden sm:inline">Cart</span> ({cart.length})
+                <span className="hidden sm:inline">Keranjang</span> ({cart.length})
               </h3>
               {cart.length > 0 && (
                 <Button size="sm" variant="outline" onClick={clearCart} className="text-xs">
-                  Clear
+                  Kosongkan
                 </Button>
               )}
             </div>
@@ -283,7 +280,7 @@ export const Orders: React.FC = () => {
             <div className="space-y-2 sm:space-y-3 mb-4 max-h-48 sm:max-h-64 overflow-y-auto">
               {cart.length === 0 ? (
                 <p className="text-gray-500 dark:text-gray-400 text-center py-4 text-sm">
-                  Cart is empty
+                  Keranjang kosong
                 </p>
               ) : (
                 cart.map((item) => {
@@ -295,7 +292,7 @@ export const Orders: React.FC = () => {
                           {menuItem?.name}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          ${item.price.toFixed(2)} each
+                          {formatIDR(item.price)} each
                         </p>
                       </div>
                       <div className="flex items-center space-x-1 sm:space-x-2">
@@ -320,7 +317,7 @@ export const Orders: React.FC = () => {
                       </div>
                       <div className="ml-2 text-right">
                         <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm">
-                          ${item.subtotal.toFixed(2)}
+                          {formatIDR(item.subtotal)}
                         </p>
                       </div>
                     </div>
@@ -337,7 +334,7 @@ export const Orders: React.FC = () => {
                       Total:
                     </span>
                     <span className="text-lg sm:text-xl font-bold text-amber-600">
-                      ${getCartTotal().toFixed(2)}
+                      {formatIDR(getCartTotal())}
                     </span>
                   </div>
                   <Button
@@ -363,22 +360,22 @@ export const Orders: React.FC = () => {
       >
         <div className="space-y-4 sm:space-y-6">
           <Input
-            label="Customer Name"
+            label="Nama Pelanggan"
             value={customerName}
             onChange={setCustomerName}
-            placeholder="Enter customer name (optional)"
+            placeholder="Masukkan nama pelanggan (opsional)"
           />
 
           <Input
-            label="Customer Phone"
+            label="Nomor Telepon"
             value={customerPhone}
             onChange={setCustomerPhone}
-            placeholder="Enter customer phone (optional)"
+            placeholder="Masukkan nomor telepon (opsional)"
           />
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              Payment Method
+              Metode Pembayaran
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
@@ -390,7 +387,7 @@ export const Orders: React.FC = () => {
                 }`}
               >
                 <Banknote className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="text-sm sm:text-base">Cash</span>
+                <span className="text-sm sm:text-base">Tunai</span>
               </button>
               <button
                 onClick={() => setPaymentMethod('midtrans')}
@@ -401,7 +398,7 @@ export const Orders: React.FC = () => {
                 }`}
               >
                 <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="text-sm sm:text-base">Midtrans</span>
+                <span className="text-sm sm:text-base">Digital</span>
               </button>
             </div>
           </div>
@@ -416,7 +413,7 @@ export const Orders: React.FC = () => {
                       {menuItem?.name} x {item.quantity}
                     </span>
                     <span className="text-gray-900 dark:text-white font-medium">
-                      ${item.subtotal.toFixed(2)}
+                      {formatIDR(item.subtotal)}
                     </span>
                   </div>
                 );
@@ -424,7 +421,7 @@ export const Orders: React.FC = () => {
               <div className="border-t border-gray-200 dark:border-gray-700 pt-2 flex justify-between font-semibold">
                 <span className="text-gray-900 dark:text-white">Total:</span>
                 <span className="text-amber-600 text-lg">
-                  ${getCartTotal().toFixed(2)}
+                  {formatIDR(getCartTotal())}
                 </span>
               </div>
             </div>
@@ -437,14 +434,14 @@ export const Orders: React.FC = () => {
               className="w-full sm:flex-1"
               disabled={submitting}
             >
-              Cancel
+              Batal
             </Button>
             <Button
               onClick={completeOrder}
               className="w-full sm:flex-1"
               disabled={submitting}
             >
-              {submitting ? 'Processing...' : 'Complete Order'}
+              {submitting ? 'Memproses...' : 'Selesaikan Pesanan'}
             </Button>
           </div>
         </div>

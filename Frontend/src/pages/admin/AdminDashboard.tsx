@@ -3,7 +3,8 @@ import { DollarSign, ShoppingBag, AlertTriangle, Users } from 'lucide-react';
 import { StatsCard } from '../../components/dashboard/StatsCard';
 import { SalesChart } from '../../components/dashboard/SalesChart';
 import { Card } from '../../components/ui/Card';
-import { dashboardAPI, orderAPI } from '../../services/api';
+import { dashboardAPI } from '../../services/api';
+import { formatIDR } from '../../services/api';
 import toast from 'react-hot-toast';
 
 interface DashboardData {
@@ -44,7 +45,7 @@ export const AdminDashboard: React.FC = () => {
           setDashboardData(response.data.stats);
         }
       } catch (error) {
-        toast.error('Failed to load dashboard data');
+        toast.error('Gagal memuat data dashboard');
         console.error('Dashboard error:', error);
       } finally {
         setLoading(false);
@@ -65,7 +66,7 @@ export const AdminDashboard: React.FC = () => {
   if (!dashboardData) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500 dark:text-gray-400">Failed to load dashboard data</p>
+        <p className="text-gray-500 dark:text-gray-400">Gagal memuat data dashboard</p>
       </div>
     );
   }
@@ -74,41 +75,41 @@ export const AdminDashboard: React.FC = () => {
     <div className="space-y-4 sm:space-y-6">
       <div className="text-center sm:text-left">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-          Admin Dashboard
+          Dashboard Admin
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
-          Welcome back! Here's what's happening at your restaurant today.
+          Selamat datang kembali! Berikut adalah ringkasan aktivitas restoran hari ini.
         </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatsCard
-          title="Today's Sales"
-          value={`$${dashboardData.revenue.today.toFixed(2)}`}
+          title="Penjualan Hari Ini"
+          value={formatIDR(dashboardData.revenue.today)}
           icon={DollarSign}
           color="green"
-          change={`Total: $${dashboardData.revenue.total.toFixed(2)}`}
+          change={`Total: ${formatIDR(dashboardData.revenue.total)}`}
         />
         <StatsCard
-          title="Today's Orders"
+          title="Pesanan Hari Ini"
           value={dashboardData.orders.today}
           icon={ShoppingBag}
           color="blue"
           change={`Total: ${dashboardData.orders.total}`}
         />
         <StatsCard
-          title="Active Users"
+          title="Pengguna Aktif"
           value={dashboardData.overview.activeUsers}
           icon={Users}
           color="yellow"
           change={`Total: ${dashboardData.overview.totalUsers}`}
         />
         <StatsCard
-          title="Active Shifts"
+          title="Shift Aktif"
           value={dashboardData.overview.activeShifts}
           icon={AlertTriangle}
           color="red"
-          change="Currently working"
+          change="Sedang bekerja"
         />
       </div>
 
@@ -119,7 +120,7 @@ export const AdminDashboard: React.FC = () => {
         
         <Card>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Top Selling Items
+            Item Terlaris
           </h3>
           <div className="space-y-3">
             {dashboardData.topSellingItems.slice(0, 5).map((item) => (
@@ -135,16 +136,16 @@ export const AdminDashboard: React.FC = () => {
                       {item.menuItem.name}
                     </p>
                     <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                      ${item.menuItem.price}
+                      {formatIDR(item.menuItem.price)}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex-shrink-0 ml-2">
-                    Sold: {item.totalQuantity}
+                    Terjual: {item.totalQuantity}
                   </span>
                   <p className="text-xs text-green-600 dark:text-green-400">
-                    ${item.totalRevenue.toFixed(2)}
+                    {formatIDR(item.totalRevenue)}
                   </p>
                 </div>
               </div>
@@ -157,9 +158,9 @@ export const AdminDashboard: React.FC = () => {
         <Card padding="sm">
           <div className="text-center">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-              ${dashboardData.overview.avgOrderValue.toFixed(2)}
+              {formatIDR(dashboardData.overview.avgOrderValue)}
             </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Avg Order Value</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Rata-rata Pesanan</p>
           </div>
         </Card>
         
@@ -168,25 +169,25 @@ export const AdminDashboard: React.FC = () => {
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
               {dashboardData.overview.totalMenuItems}
             </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Menu Items</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Item Menu</p>
           </div>
         </Card>
         
         <Card padding="sm">
           <div className="text-center">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-              ${dashboardData.revenue.week.toFixed(2)}
+              {formatIDR(dashboardData.revenue.week)}
             </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">This Week</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Minggu Ini</p>
           </div>
         </Card>
         
         <Card padding="sm">
           <div className="text-center">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-              ${dashboardData.revenue.month.toFixed(2)}
+              {formatIDR(dashboardData.revenue.month)}
             </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">This Month</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Bulan Ini</p>
           </div>
         </Card>
       </div>

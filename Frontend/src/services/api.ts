@@ -7,10 +7,11 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 // Request interceptor untuk menambahkan token
@@ -31,21 +32,42 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error('API Error:', error);
+    
     if (error.response?.status === 401) {
       localStorage.removeItem('auth-token');
       localStorage.removeItem('pos-user');
-      window.location.href = '/login';
-      toast.error('Session expired. Please login again.');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+        toast.error('Session expired. Please login again.');
+      }
     } else if (error.response?.status === 403) {
       toast.error('Access denied. Insufficient permissions.');
     } else if (error.response?.status >= 500) {
       toast.error('Server error. Please try again later.');
+    } else if (error.code === 'NETWORK_ERROR' || error.code === 'ERR_NETWORK') {
+      toast.error('Network error. Please check your connection.');
     }
     return Promise.reject(error);
   }
 );
 
 export default api;
+
+// Helper function to format currency to IDR
+export const formatIDR = (amount: number): string => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
+// Helper function to format number to IDR without symbol
+export const formatIDRNumber = (amount: number): string => {
+  return new Intl.NumberFormat('id-ID').format(amount);
+};
 
 // API endpoints
 export const authAPI = {

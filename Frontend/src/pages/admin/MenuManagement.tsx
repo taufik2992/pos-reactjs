@@ -6,7 +6,7 @@ import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { FileUpload } from '../../components/ui/FileUpload';
 import { MenuItem } from '../../types';
-import { menuAPI } from '../../services/api';
+import { menuAPI, formatIDR } from '../../services/api';
 import toast from 'react-hot-toast';
 
 export const MenuManagement: React.FC = () => {
@@ -43,7 +43,7 @@ export const MenuManagement: React.FC = () => {
         setMenuItems(response.data.menuItems);
       }
     } catch (error) {
-      toast.error('Failed to load menu items');
+      toast.error('Gagal memuat item menu');
     } finally {
       setLoading(false);
     }
@@ -89,13 +89,13 @@ export const MenuManagement: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this item?')) {
+    if (window.confirm('Apakah Anda yakin ingin menghapus item ini?')) {
       try {
         await menuAPI.delete(id);
         setMenuItems(items => items.filter(item => item.id !== id));
-        toast.success('Item deleted successfully!');
+        toast.success('Item berhasil dihapus!');
       } catch (error) {
-        toast.error('Failed to delete item');
+        toast.error('Gagal menghapus item');
       }
     }
   };
@@ -127,20 +127,20 @@ export const MenuManagement: React.FC = () => {
               item.id === editingItem.id ? response.data.menuItem : item
             )
           );
-          toast.success('Item updated successfully!');
+          toast.success('Item berhasil diperbarui!');
         }
       } else {
         const response = await menuAPI.create(formDataToSend);
         if (response.data.success) {
           setMenuItems(items => [...items, response.data.menuItem]);
-          toast.success('Item added successfully!');
+          toast.success('Item berhasil ditambahkan!');
         }
       }
       
       setIsModalOpen(false);
       loadCategories(); // Reload categories in case new one was added
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Operation failed';
+      const message = error.response?.data?.message || 'Operasi gagal';
       toast.error(message);
     }
   };
@@ -158,14 +158,14 @@ export const MenuManagement: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="text-center sm:text-left w-full sm:w-auto">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-            Menu Management
+            Manajemen Menu
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
-            Manage your restaurant menu items
+            Kelola item menu restoran Anda
           </p>
         </div>
         <Button onClick={handleAdd} icon={Plus} className="w-full sm:w-auto">
-          Add New Item
+          Tambah Item Baru
         </Button>
       </div>
 
@@ -174,7 +174,7 @@ export const MenuManagement: React.FC = () => {
           <Input
             value={searchTerm}
             onChange={setSearchTerm}
-            placeholder="Search menu items..."
+            placeholder="Cari item menu..."
             icon={Search}
           />
         </div>
@@ -201,14 +201,14 @@ export const MenuManagement: React.FC = () => {
                 </p>
                 <div className="flex justify-between items-center">
                   <span className="text-base sm:text-lg font-bold text-amber-600">
-                    ${item.price.toFixed(2)}
+                    {formatIDR(item.price)}
                   </span>
                   <span className={`text-xs px-2 py-1 rounded-full ${
                     item.stock < 10 
                       ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300'
                       : 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300'
                   }`}>
-                    Stock: {item.stock}
+                    Stok: {item.stock}
                   </span>
                 </div>
                 <div className="flex space-x-2 pt-2">
@@ -228,7 +228,7 @@ export const MenuManagement: React.FC = () => {
                     icon={Trash2}
                     className="flex-1 text-xs"
                   >
-                    Delete
+                    Hapus
                   </Button>
                 </div>
               </div>
@@ -239,7 +239,7 @@ export const MenuManagement: React.FC = () => {
         {filteredItems.length === 0 && (
           <div className="text-center py-8">
             <p className="text-gray-500 dark:text-gray-400">
-              No menu items found
+              Tidak ada item menu ditemukan
             </p>
           </div>
         )}
@@ -248,19 +248,19 @@ export const MenuManagement: React.FC = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}
+        title={editingItem ? 'Edit Item Menu' : 'Tambah Item Menu Baru'}
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            label="Name"
+            label="Nama"
             value={formData.name}
             onChange={(value) => setFormData({ ...formData, name: value })}
             required
           />
           
           <Input
-            label="Description"
+            label="Deskripsi"
             value={formData.description}
             onChange={(value) => setFormData({ ...formData, description: value })}
             required
@@ -268,16 +268,15 @@ export const MenuManagement: React.FC = () => {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="Price"
+              label="Harga (IDR)"
               type="number"
-              step="0.01"
               value={formData.price}
               onChange={(value) => setFormData({ ...formData, price: value })}
               required
             />
             
             <Input
-              label="Stock"
+              label="Stok"
               type="number"
               value={formData.stock}
               onChange={(value) => setFormData({ ...formData, stock: value })}
@@ -287,7 +286,7 @@ export const MenuManagement: React.FC = () => {
           
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Category
+              Kategori
             </label>
             <select
               value={formData.category}
@@ -295,7 +294,7 @@ export const MenuManagement: React.FC = () => {
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               required
             >
-              <option value="">Select Category</option>
+              <option value="">Pilih Kategori</option>
               {categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
@@ -305,7 +304,7 @@ export const MenuManagement: React.FC = () => {
           </div>
           
           <FileUpload
-            label="Item Image"
+            label="Gambar Item"
             value={formData.imagePreview}
             onChange={handleImageUpload}
             required={!editingItem}
@@ -318,10 +317,10 @@ export const MenuManagement: React.FC = () => {
               onClick={() => setIsModalOpen(false)}
               className="w-full sm:w-auto"
             >
-              Cancel
+              Batal
             </Button>
             <Button type="submit" className="w-full sm:w-auto">
-              {editingItem ? 'Update' : 'Add'} Item
+              {editingItem ? 'Perbarui' : 'Tambah'} Item
             </Button>
           </div>
         </form>

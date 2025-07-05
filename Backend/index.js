@@ -29,6 +29,9 @@ connectDB();
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
+// Trust proxy for production
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(
   helmet({
@@ -58,26 +61,56 @@ app.use(
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 1000, // Increased for production
   message: {
     success: false,
     message: "Too many requests from this IP, please try again later.",
   },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 app.use("/api/", limiter);
 
-// CORS configuration
-app.use(
-  cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? ["https://yourdomain.com"]
-        : ["http://localhost:5173", "http://localhost:5000"],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// CORS configuration - FIXED
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, etc.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://localhost:5000',
+      'https://localhost:5173',
+      'https://your-frontend-domain.com', // Replace with your actual domain
+      'https://your-frontend-domain.netlify.app', // Replace with your actual Netlify domain
+      'https://your-frontend-domain.vercel.app' // Replace with your actual Vercel domain
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all origins in development
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'Cache-Control',
+    'Pragma'
+  ],
+  exposedHeaders: ['set-cookie']
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 
 // Logging
 if (process.env.NODE_ENV !== "production") {
@@ -119,6 +152,7 @@ app.get("/api", (req, res) => {
     success: true,
     message: "Coffee Shop API",
     version: "1.0.0",
+    currency: "IDR",
     endpoints: {
       auth: {
         login: "POST /api/auth/login",
@@ -170,15 +204,6 @@ app.get("/api", (req, res) => {
     documentation: "Visit /api-test for interactive API testing",
   });
 });
-
-/*// Dashboard Statistics
-GET /api/dashboard/stats
-
-// Reports (Admin only)
-GET /api/dashboard/reports/revenue?startDate=2024-01-01&endDate=2024-12-31&groupBy=month
-GET /api/dashboard/reports/products?category=Coffee
-GET /api/dashboard/reports/staff?startDate=2024-01-01
-GET /api/dashboard/reports/customers?endDate=2024-12-31 */
 
 // 404 handler for API routes
 app.use("/api/*", (req, res) => {
@@ -254,53 +279,52 @@ app.use((error, req, res, next) => {
   });
 });
 
-// Start server (only in development)
-if (process.env.NODE_ENV !== "production") {
-  const PORT = process.env.PORT || 5000;
+// Start server
+const PORT = process.env.PORT || 5000;
 
-  const server = app.listen(PORT, () => {
-    console.log(`
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`
 🚀 Coffee Shop Server is running!
 📍 Port: ${PORT}
 🌍 Environment: ${process.env.NODE_ENV || "development"}
+💰 Currency: IDR (Indonesian Rupiah)
 📱 Web Interface: http://localhost:${PORT}
 🔧 API Docs: http://localhost:${PORT}/api
 🧪 API Testing: http://localhost:${PORT}/api-test
 📊 Reports: http://localhost:${PORT}/reports
 ⚡ Health Check: http://localhost:${PORT}/health
-    `);
-  });
+  `);
+});
 
-  // Graceful shutdown
-  process.on("SIGTERM", () => {
-    console.log("SIGTERM received. Shutting down gracefully...");
-    server.close(() => {
-      console.log("Process terminated");
-      process.exit(0);
-    });
+// Graceful shutdown
+process.on("SIGTERM", () => {
+  console.log("SIGTERM received. Shutting down gracefully...");
+  server.close(() => {
+    console.log("Process terminated");
+    process.exit(0);
   });
+});
 
-  process.on("SIGINT", () => {
-    console.log("SIGINT received. Shutting down gracefully...");
-    server.close(() => {
-      console.log("Process terminated");
-      process.exit(0);
-    });
+process.on("SIGINT", () => {
+  console.log("SIGINT received. Shutting down gracefully...");
+  server.close(() => {
+    console.log("Process terminated");
+    process.exit(0);
   });
+});
 
-  // Handle unhandled promise rejections
-  process.on("unhandledRejection", (err) => {
-    console.error("Unhandled Promise Rejection:", err);
-    server.close(() => {
-      process.exit(1);
-    });
-  });
-
-  // Handle uncaught exceptions
-  process.on("uncaughtException", (err) => {
-    console.error("Uncaught Exception:", err);
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Promise Rejection:", err);
+  server.close(() => {
     process.exit(1);
   });
-}
+});
+
+// Handle uncaught exceptions
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+  process.exit(1);
+});
 
 module.exports = app;
